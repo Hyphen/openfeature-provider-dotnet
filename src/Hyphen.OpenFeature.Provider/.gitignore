@@ -1,0 +1,41 @@
+# .NET build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+
+# Visual Studio files
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.dbmdl
+*.dbproj.schemaview
+*.pfx
+*.publishsettings
+
+# IDE files
+.idea/
+.vscode/
+*.sln.iml
+
+# NuGet packages
+*.nupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Test Results
+TestResults/
+[Tt]est[Rr]esult*/
+
+# Build Results
+[Bb]uild[Ll]og.*
+
+# Others
+*.log
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
