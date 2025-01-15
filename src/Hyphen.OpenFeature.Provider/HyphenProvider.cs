@@ -1,36 +1,25 @@
-using System;
-using System.Threading.Tasks;
 using OpenFeature;
 using OpenFeature.Model;
 using Metadata = OpenFeature.Model.Metadata;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
+using OpenFeature.Constant;
 
 namespace Hyphen.OpenFeature.Provider
 {
-    public class HyphenProvider
+    public class HyphenProvider(string publicKey, HyphenProviderOptions options)
     {
-         const string Name = "hyphen-toggle-dotnet";
-        private readonly string _publicKey;
-        private readonly HyphenProviderOptions _options;
-        private readonly HyphenClient _hyphenClient;
+        private const string Name = "hyphen-toggle-dotnet";
+        private readonly string _publicKey = publicKey;
+        private readonly HyphenClient _hyphenClient = new(publicKey, options);
         private readonly Metadata _providerMetadata = new Metadata(Name);
-
-        public HyphenProvider(string publicKey, HyphenProviderOptions options)
-        {
-            _publicKey = publicKey;
-            _options = options;
-            _hyphenClient = new HyphenClient(publicKey, options);
-        }
 
         private string GetTargetingKey(HyphenEvaluationContext context)
         {
             if (!string.IsNullOrEmpty(context.TargetingKey))
                 return context.TargetingKey;
-            if (context.User != null)
+            if (context.User != null && !string.IsNullOrEmpty(context.User.Id))
                 return context.User.Id;
             
-            return $"{_options.Application}-{_options.Environment}-{Guid.NewGuid().ToString("N").Substring(0, 8)}";
+            return $"{options.Application}-{options.Environment}-{Guid.NewGuid().ToString("N")[..8]}";
         }
 
         private void ValidateContext(EvaluationContext context)
@@ -60,7 +49,7 @@ namespace Hyphen.OpenFeature.Provider
             }
             catch (Exception ex)
             {
-                return new ResolutionDetails<bool>(defaultValue, ErrorType.Error, ex.Message);
+                return new ResolutionDetails<bool>(defaultValue, ErrorType.General, ex.Message);
             }
         }
 
