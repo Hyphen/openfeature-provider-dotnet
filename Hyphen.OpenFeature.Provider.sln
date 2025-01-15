@@ -1,8 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hyphen.OpenFeature.Provider", "src\Hyphen.OpenFeature.Provider\OpenFeature.Provider.csproj", "{F8874DC7-8079-46C3-8DE9-08B1718CE6F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hyphen.OpenFeature.Provider.Tests", "tests\Hyphen.OpenFeature.Provider.Tests\OpenFeature.Provider.Tests.csproj", "{A8874DC7-8079-46C3-8DE9-08B1718CE6F3}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
