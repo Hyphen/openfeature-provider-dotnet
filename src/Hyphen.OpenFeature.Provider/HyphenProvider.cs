@@ -18,11 +18,6 @@ namespace Hyphen.OpenFeature.Provider
 
         public HyphenProvider(string publicKey, HyphenProviderOptions options)
         {
-            if (string.IsNullOrEmpty(options.Application))
-                throw new ArgumentException("Application is required");
-            if (string.IsNullOrEmpty(options.Environment))
-                throw new ArgumentException("Environment is required");
-
             _publicKey = publicKey;
             _options = options;
             _hyphenClient = new HyphenClient(publicKey, options);
