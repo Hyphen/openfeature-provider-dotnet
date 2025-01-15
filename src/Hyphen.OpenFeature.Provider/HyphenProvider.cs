@@ -8,7 +8,6 @@ namespace Hyphen.OpenFeature.Provider
     public class HyphenProvider(string publicKey, HyphenProviderOptions options)
     {
         private const string Name = "hyphen-toggle-dotnet";
-        private readonly string _publicKey = publicKey;
         private readonly HyphenClient _hyphenClient = new(publicKey, options);
         private readonly Metadata _providerMetadata = new Metadata(Name);
 
@@ -39,17 +38,18 @@ namespace Hyphen.OpenFeature.Provider
             {
                 var evaluation = await GetEvaluation(flagKey, context);
                 if (evaluation.Type != "boolean")
-                    return new ResolutionDetails<bool>(defaultValue, ErrorType.TypeMismatch);
+                    return new ResolutionDetails<bool>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
                 return new ResolutionDetails<bool>
                 {
+                    
                     Value = Convert.ToBoolean(evaluation.Value),
                     Reason = evaluation.Reason
                 };
             }
             catch (Exception ex)
             {
-                return new ResolutionDetails<bool>(defaultValue, ErrorType.General, ex.Message);
+                return new ResolutionDetails<bool>(flagKey, defaultValue, ErrorType.General, ex.Message);
             }
         }
 
@@ -59,7 +59,7 @@ namespace Hyphen.OpenFeature.Provider
             {
                 var evaluation = await GetEvaluation(flagKey, context);
                 if (evaluation.Type != "string")
-                    return new ResolutionDetails<string>(defaultValue, ErrorType.TypeMismatch);
+                    return new ResolutionDetails<string>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
                 return new ResolutionDetails<string>
                 {
@@ -69,7 +69,7 @@ namespace Hyphen.OpenFeature.Provider
             }
             catch (Exception ex)
             {
-                return new ResolutionDetails<string>(defaultValue, ErrorType.Error, ex.Message);
+                return new ResolutionDetails<string>(flagKey, defaultValue, ErrorType.General, ex.Message);
             }
         }
 
@@ -79,7 +79,7 @@ namespace Hyphen.OpenFeature.Provider
             {
                 var evaluation = await GetEvaluation(flagKey, context);
                 if (evaluation.Type != "number")
-                    return new ResolutionDetails<int>(defaultValue, ErrorType.TypeMismatch);
+                    return new ResolutionDetails<int>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
                 return new ResolutionDetails<int>
                 {
@@ -89,7 +89,7 @@ namespace Hyphen.OpenFeature.Provider
             }
             catch (Exception ex)
             {
-                return new ResolutionDetails<int>(defaultValue, ErrorType.Error, ex.Message);
+                return new ResolutionDetails<int>(flagKey, defaultValue, ErrorType.Error, ex.Message);
             }
         }
 
@@ -99,7 +99,7 @@ namespace Hyphen.OpenFeature.Provider
             {
                 var evaluation = await GetEvaluation(flagKey, context);
                 if (evaluation.Type != "object")
-                    return new ResolutionDetails<T>(defaultValue, ErrorType.TypeMismatch);
+                    return new ResolutionDetails<T>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
                 var value = System.Text.Json.JsonSerializer.Deserialize<T>(evaluation.Value.ToString());
                 return new ResolutionDetails<T>
@@ -110,7 +110,7 @@ namespace Hyphen.OpenFeature.Provider
             }
             catch (Exception ex)
             {
-                return new ResolutionDetails<T>(defaultValue, ErrorType.Error, ex.Message);
+                return new ResolutionDetails<T>(flagKey, defaultValue, ErrorType.General, ex.Message);
             }
         }
 
