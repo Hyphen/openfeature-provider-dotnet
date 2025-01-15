@@ -2,8 +2,8 @@ namespace Hyphen.OpenFeature.Provider
 {
     public class HyphenProviderOptions
     {
-        public string Application { get; set; }
-        public string Environment { get; set; }
+        public required string Application { get; set; }
+        public required string Environment { get; set; }
         public string[]? HorizonUrls { get; set; }
         public bool? EnableToggleUsage { get; set; } = true;
         public CacheOptions? Cache { get; set; }

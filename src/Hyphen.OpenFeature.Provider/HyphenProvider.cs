@@ -21,18 +21,7 @@ namespace Hyphen.OpenFeature.Provider
             return $"{options.Application}-{options.Environment}-{Guid.NewGuid().ToString("N")[..8]}";
         }
 
-        private void ValidateContext(EvaluationContext context)
-        {
-            var hyphenContext = new HyphenEvaluationContext
-            {
-                TargetingKey = context?.TargetingKey,
-                User = context?.TargetingKey != null ? new User { Id = context.TargetingKey } : null
-            };
-            if (string.IsNullOrEmpty(hyphenContext.TargetingKey))
-                throw new ArgumentException("targetingKey is required");
-        }
-
-        public async Task<ResolutionDetails<bool>> ResolveBooleanValue(string flagKey, bool defaultValue, EvaluationContext context = null)
+        public async Task<ResolutionDetails<bool>> ResolveBooleanValue(string flagKey, bool defaultValue, EvaluationContext context)
         {
             try
             {
@@ -40,12 +29,7 @@ namespace Hyphen.OpenFeature.Provider
                 if (evaluation.Type != "boolean")
                     return new ResolutionDetails<bool>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
-                return new ResolutionDetails<bool>
-                {
-                    
-                    Value = Convert.ToBoolean(evaluation.Value),
-                    Reason = evaluation.Reason
-                };
+                return new ResolutionDetails<bool>(flagKey, Convert.ToBoolean(evaluation.Value), ErrorType.None, evaluation.Reason);
             }
             catch (Exception ex)
             {
@@ -53,19 +37,15 @@ namespace Hyphen.OpenFeature.Provider
             }
         }
 
-        public async Task<ResolutionDetails<string>> ResolveStringValue(string flagKey, string defaultValue, EvaluationContext context = null)
+        public async Task<ResolutionDetails<string>> ResolveStringValue(string flagKey, string defaultValue, EvaluationContext context)
         {
             try
             {
                 var evaluation = await GetEvaluation(flagKey, context);
-                if (evaluation.Type != "string")
+                if (evaluation.Type != "string" || evaluation.Value == null)
                     return new ResolutionDetails<string>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
-                return new ResolutionDetails<string>
-                {
-                    Value = evaluation.Value.ToString(),
-                    Reason = evaluation.Reason
-                };
+                return new ResolutionDetails<string>(flagKey, evaluation.Value.ToString() ?? defaultValue, ErrorType.None, evaluation.Reason);
             }
             catch (Exception ex)
             {
@@ -73,7 +53,7 @@ namespace Hyphen.OpenFeature.Provider
             }
         }
 
-        public async Task<ResolutionDetails<int>> ResolveNumberValue(string flagKey, int defaultValue, EvaluationContext context = null)
+        public async Task<ResolutionDetails<int>> ResolveNumberValue(string flagKey, int defaultValue, EvaluationContext context)
         {
             try
             {
@@ -81,19 +61,15 @@ namespace Hyphen.OpenFeature.Provider
                 if (evaluation.Type != "number")
                     return new ResolutionDetails<int>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
-                return new ResolutionDetails<int>
-                {
-                    Value = Convert.ToInt32(evaluation.Value),
-                    Reason = evaluation.Reason
-                };
+                return new ResolutionDetails<int>(flagKey, Convert.ToInt32(evaluation.Value), ErrorType.None, evaluation.Reason);
             }
             catch (Exception ex)
             {
-                return new ResolutionDetails<int>(flagKey, defaultValue, ErrorType.Error, ex.Message);
+                return new ResolutionDetails<int>(flagKey, defaultValue, ErrorType.General, ex.Message);
             }
         }
 
-        public async Task<ResolutionDetails<T>> ResolveStructureValue<T>(string flagKey, T defaultValue, EvaluationContext context = null)
+        public async Task<ResolutionDetails<T>> ResolveStructureValue<T>(string flagKey, T defaultValue, EvaluationContext context)
         {
             try
             {
@@ -102,11 +78,7 @@ namespace Hyphen.OpenFeature.Provider
                     return new ResolutionDetails<T>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
                 var value = System.Text.Json.JsonSerializer.Deserialize<T>(evaluation.Value.ToString());
-                return new ResolutionDetails<T>
-                {
-                    Value = value,
-                    Reason = evaluation.Reason
-                };
+                return new ResolutionDetails<T>(flagKey, value, ErrorType.None, evaluation.Reason);
             }
             catch (Exception ex)
             {
@@ -116,15 +88,16 @@ namespace Hyphen.OpenFeature.Provider
 
         private async Task<Evaluation> GetEvaluation(string flagKey, EvaluationContext context)
         {
-            var hyphenContext = context as HyphenEvaluationContext ?? new HyphenEvaluationContext();
-            hyphenContext.TargetingKey = GetTargetingKey(hyphenContext);
-            ValidateContext(hyphenContext);
+            var hyphenContext = new HyphenEvaluationContext
+            {
+                TargetingKey = GetTargetingKey(context)
+            };
 
             var response = await _hyphenClient.Evaluate(hyphenContext);
-            if (!response.Toggles.ContainsKey(flagKey))
+            if (!response.Toggles.TryGetValue(flagKey, out var evaluation))
                 throw new KeyNotFoundException($"Flag {flagKey} not found");
 
-            return response.Toggles[flagKey];
+            return evaluation;
         }
     }
 }

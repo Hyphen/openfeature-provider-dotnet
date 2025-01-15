@@ -17,7 +17,8 @@ namespace Hyphen.OpenFeature.Provider
             _defaultHorizonUrl = BuildDefaultHorizonUrl(publicKey);
             var urls = options.HorizonUrls ?? Array.Empty<string>();
             _horizonUrls = new List<string>(urls) { _defaultHorizonUrl }.ToArray();
-            _cache = new CacheClient(options.Cache);
+            var cache = options.Cache ?? new CacheOptions();
+            _cache = new CacheClient(cache);
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("x-api-key", publicKey);
         }
@@ -62,7 +63,7 @@ namespace Hyphen.OpenFeature.Provider
                 _cache.Set(context, evaluationResponse);
             }
 
-            return evaluationResponse;
+            return evaluationResponse!;
         }
 
         public async Task PostTelemetry(TelemetryPayload payload)
@@ -72,7 +73,7 @@ namespace Hyphen.OpenFeature.Provider
 
         private async Task<string> TryUrls(string urlPath, object payload)
         {
-            Exception lastException = null;
+            Exception lastException = new Exception("Failed to connect to any horizon URL");
 
             foreach (var baseUrl in _horizonUrls)
             {
@@ -88,7 +89,7 @@ namespace Hyphen.OpenFeature.Provider
                 }
             }
 
-            throw lastException ?? new Exception("Failed to connect to any horizon URL");
+            throw lastException;
         }
 
         private async Task<string> HttpPost(string url, object payload)
@@ -113,26 +114,26 @@ namespace Hyphen.OpenFeature.Provider
 
     public class TelemetryPayload
     {
-        public HyphenEvaluationContext Context { get; set; }
-        public TelemetryData Data { get; set; }
+        public required HyphenEvaluationContext Context { get; set; }
+        public required TelemetryData Data { get; set; }
     }
 
     public class TelemetryData
     {
-        public Evaluation Toggle { get; set; }
+        public required Evaluation Toggle { get; set; }
     }
 
     public class EvaluationResponse
     {
-        public Dictionary<string, Evaluation> Toggles { get; set; }
+        public required Dictionary<string, Evaluation> Toggles { get; set; }
     }
 
     public class Evaluation
     {
-        public string Key { get; set; }
-        public object Value { get; set; }
-        public string Type { get; set; }
-        public string Reason { get; set; }
-        public string ErrorMessage { get; set; }
+        public required string Key { get; set; }
+        public required object Value { get; set; }
+        public required string Type { get; set; }
+        public string? Reason { get; set; }
+        public required string ErrorMessage { get; set; }
     }
 }
