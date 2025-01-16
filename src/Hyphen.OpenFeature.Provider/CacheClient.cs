@@ -2,13 +2,14 @@ using System.Text.Json;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Caching.Memory;
+using OpenFeature.Model;
 
 namespace Hyphen.OpenFeature.Provider
 {
     public class CacheClient
     {
         private readonly IMemoryCache _cache;
-        private readonly Func<HyphenEvaluationContext, string> _generateCacheKeyFn;
+        private readonly Func<EvaluationContext, string> _generateCacheKeyFn;
         private readonly int _ttlSeconds;
 
         public CacheClient(CacheOptions options)
@@ -18,19 +19,23 @@ namespace Hyphen.OpenFeature.Provider
             _generateCacheKeyFn = options?.GenerateCacheKeyFn ?? DefaultGenerateCacheKey;
         }
 
-        private string DefaultGenerateCacheKey(HyphenEvaluationContext context)
+        private string DefaultGenerateCacheKey(EvaluationContext context)
         {
+            var IpAddress = context.ContainsKey("IpAddress") ? context.GetValue("IpAddress").AsString : null;
+            var CustomAttributes = context.ContainsKey("CustomAttributes") ? context.GetValue("CustomAttributes").AsStructure : null;
+            var User = context.ContainsKey("User") ? context.GetValue("User").AsStructure : null;
+
             var normalizedContext = new
             {
                 context.TargetingKey,
-                context.IpAddress,
-                context.CustomAttributes,
-                User = context.User == null ? null : new
+                IpAddress,
+                CustomAttributes,
+                User = User == null ? null : new
                 {
-                    context.User.Id,
-                    context.User.Email,
-                    context.User.Name,
-                    context.User.CustomAttributes
+                    Id = User.ContainsKey("Id") ? User.GetValue("Id").AsString : null,
+                    Email = User.ContainsKey("Email") ? User.GetValue("Email").AsString : null,
+                    Name = User.ContainsKey("Name") ? User.GetValue("Name").AsString : null,
+                    CustomAttributes = User.ContainsKey("CustomAttributes") ? User.GetValue("CustomAttributes").AsStructure : null
                 }
             };
 
@@ -40,13 +45,13 @@ namespace Hyphen.OpenFeature.Provider
             return Convert.ToBase64String(bytes);
         }
 
-        public T? Get<T>(HyphenEvaluationContext context) where T : class
+        public T? Get<T>(EvaluationContext context) where T : class
         {
             var key = _generateCacheKeyFn(context);
             return _cache.Get<T>(key);
         }
 
-        public void Set<T>(HyphenEvaluationContext context, T value) where T : class
+        public void Set<T>(EvaluationContext context, T value) where T : class
         {
             var key = _generateCacheKeyFn(context);
             var options = new MemoryCacheEntryOptions()

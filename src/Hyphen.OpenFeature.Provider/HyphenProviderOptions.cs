@@ -1,3 +1,5 @@
+using OpenFeature.Model;
+
 namespace Hyphen.OpenFeature.Provider
 {
     public class HyphenProviderOptions
@@ -12,6 +14,6 @@ namespace Hyphen.OpenFeature.Provider
     public class CacheOptions
     {
         public int? TtlSeconds { get; set; } = 30;
-        public Func<HyphenEvaluationContext, string>? GenerateCacheKeyFn { get; set; }
+        public Func<EvaluationContext, string>? GenerateCacheKeyFn { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using OpenFeature.Model;
 
 namespace Hyphen.OpenFeature.Provider
 {
@@ -47,7 +48,7 @@ namespace Hyphen.OpenFeature.Provider
             }
         }
 
-        public async Task<EvaluationResponse> Evaluate(HyphenEvaluationContext context)
+        public async Task<EvaluationResponse> Evaluate(EvaluationContext context)
         {
             var cachedResponse = _cache.Get<EvaluationResponse>(context);
             if (cachedResponse != null)
@@ -114,7 +115,7 @@ namespace Hyphen.OpenFeature.Provider
 
     public class TelemetryPayload
     {
-        public required HyphenEvaluationContext Context { get; set; }
+        public required EvaluationContext Context { get; set; }
         public required TelemetryData Data { get; set; }
     }
 
@@ -125,15 +126,15 @@ namespace Hyphen.OpenFeature.Provider
 
     public class EvaluationResponse
     {
-        public required Dictionary<string, Evaluation> Toggles { get; set; }
+        public required Dictionary<string, Evaluation> toggles { get; set; }
     }
 
     public class Evaluation
     {
-        public required string Key { get; set; }
-        public required object Value { get; set; }
-        public required string Type { get; set; }
-        public string? Reason { get; set; }
-        public required string ErrorMessage { get; set; }
+        public required string key { get; set; }
+        public required object value { get; set; }
+        public required string type { get; set; }
+        public string? reason { get; set; }
+        public string? errorMessage { get; set; }
     }
 }
