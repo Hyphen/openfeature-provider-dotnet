@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using OpenFeature.Model;
 
 namespace Hyphen.OpenFeature.Provider
@@ -7,6 +9,7 @@ namespace Hyphen.OpenFeature.Provider
     public class HyphenClient
     {
         private readonly string _publicKey;
+        private readonly HyphenProviderOptions _options;
         private readonly string[] _horizonUrls;
         private readonly string _defaultHorizonUrl;
         private readonly CacheClient _cache;
@@ -15,6 +18,7 @@ namespace Hyphen.OpenFeature.Provider
         public HyphenClient(string publicKey, HyphenProviderOptions options)
         {
             _publicKey = publicKey;
+            _options = options;
             _defaultHorizonUrl = BuildDefaultHorizonUrl(publicKey);
             var urls = options.HorizonUrls ?? Array.Empty<string>();
             _horizonUrls = new List<string>(urls) { _defaultHorizonUrl }.ToArray();
@@ -55,15 +59,14 @@ namespace Hyphen.OpenFeature.Provider
             {
                 return cachedResponse;
             }
-
-            var response = await TryUrls("/toggle/evaluate", context);
+            HyphenEvaluationContext payload = BuildPayloadFromContext(context);
+            var response = await TryUrls("/toggle/evaluate", payload);
             var evaluationResponse = JsonSerializer.Deserialize<EvaluationResponse>(response);
 
             if (evaluationResponse != null)
             {
                 _cache.Set(context, evaluationResponse);
             }
-
             return evaluationResponse!;
         }
 
@@ -75,13 +78,12 @@ namespace Hyphen.OpenFeature.Provider
         private async Task<string> TryUrls(string urlPath, object payload)
         {
             Exception lastException = new Exception("Failed to connect to any horizon URL");
-
             foreach (var baseUrl in _horizonUrls)
             {
                 try
                 {
-                    var url = new Uri(new Uri(baseUrl), urlPath.TrimStart('/')).ToString();
-                    var response = await HttpPost(url, payload);
+                    string? url = new Uri(new Uri(baseUrl), urlPath.TrimStart('/')).ToString();
+                    string? response = await HttpPost(url, payload);
                     return response;
                 }
                 catch (Exception ex)
@@ -95,7 +97,7 @@ namespace Hyphen.OpenFeature.Provider
 
         private async Task<string> HttpPost(string url, object payload)
         {
-            var content = new StringContent(
+            StringContent content = new StringContent(
                 JsonSerializer.Serialize(payload),
                 Encoding.UTF8,
                 "application/json"
@@ -111,17 +113,74 @@ namespace Hyphen.OpenFeature.Provider
 
             return responseContent;
         }
+
+        public HyphenEvaluationContext BuildPayloadFromContext(EvaluationContext context)
+        {
+            string? application = context.ContainsKey("Application") ?  context.GetValue("Application").AsString : _options.Application;
+            string? environment = context.ContainsKey("Environment") ? context.GetValue("Environment").AsString : _options.Environment;
+            string? ipAddress = context.ContainsKey("IpAddress") ? context.GetValue("IpAddress").AsString : null;
+            Structure? userContext = context.ContainsKey("User") ? context.GetValue("User").AsStructure : null;
+            Dictionary<string, object> customAttributes = new Dictionary<string, object>();
+
+            if (context.TryGetValue("CustomAttributes", out var customAttributesValue) &&
+            customAttributesValue?.AsStructure is Structure customAttributesStructure)
+            {
+                foreach (var key in customAttributesStructure.Keys)
+                {
+                    if (customAttributesStructure.TryGetValue(key, out var value))
+                    {
+                        customAttributes[key] = value!.AsObject!;
+                    }
+                }
+            }
+
+            UserContext? user = userContext == null ? null : new UserContext
+            {
+                id = userContext.ContainsKey("Id") ? userContext.GetValue("Id").AsString : null,
+                name = userContext.ContainsKey("Name") ? userContext.GetValue("Name").AsString : null,
+                email = userContext.ContainsKey("Email") ? userContext.GetValue("Email").AsString : null,
+            };
+
+            Dictionary<string, object> userCustomAttributes = new Dictionary<string, object>();
+
+            if (userContext != null && userContext.TryGetValue("CustomAttributes", out var userCustomAttributesValue) &&
+            userCustomAttributesValue?.AsStructure is Structure userCustomAttributesStructure)
+            {
+                foreach (var key in userCustomAttributesStructure.Keys)
+                {
+                    if (userCustomAttributesStructure.TryGetValue(key, out var value))
+                    {
+                        userCustomAttributes[key] = value!.AsObject!;
+                    }
+                }
+            }
+            
+            if (user != null)
+                user.customAttributes = userCustomAttributes;
+
+            HyphenEvaluationContext payload = new HyphenEvaluationContext
+            {
+                targetingKey = context.TargetingKey!,
+                ipAddress = ipAddress,
+                user = user,
+                application = application!,
+                environment = environment!,
+                customAttributes = customAttributes,
+            };
+            
+            return payload;
+        }
     }
 
     public class TelemetryPayload
     {
-        public required EvaluationContext Context { get; set; }
-        public required TelemetryData Data { get; set; }
+        public required HyphenEvaluationContext context { get; set; }
+        public required TelemetryData data { get; set; }
     }
 
     public class TelemetryData
     {
-        public required Evaluation Toggle { get; set; }
+        public required Evaluation toggle { get; set; }
     }
 
     public class EvaluationResponse
