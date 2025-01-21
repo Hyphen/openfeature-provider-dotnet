@@ -115,10 +115,35 @@ namespace Hyphen.OpenFeature.Provider
                     return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.ParseError);
 
                 ImmutableMetadata metadata = GetMetadata(evaluation.type);
-
                 if (evaluation.value is JsonElement jsonElement)
                 {
-                    return new ResolutionDetails<Value>(flagKey, new Value(jsonElement.GetRawText()), ErrorType.None, evaluation.reason, null, null, metadata);
+                    if (jsonElement.ValueKind == JsonValueKind.String)
+                    {
+                        try
+                        {
+                            var jsonString = jsonElement.GetString();
+
+                            var parsedJson = JsonDocument.Parse(jsonString!).RootElement;
+                            if (parsedJson.ValueKind == JsonValueKind.Object)
+                            {
+                                var structure = Structure.Builder();
+                                foreach (var property in parsedJson.EnumerateObject())
+                                {
+                                    structure.Set(property.Name, property.Value.GetRawText());
+                                }
+
+                                return new ResolutionDetails<Value>(flagKey, new Value(structure.Build()), ErrorType.None, evaluation.reason, null, null, metadata);
+                            }
+                            else
+                            {
+                                return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.TypeMismatch);
+                            }
+                        }
+                        catch
+                        {
+                            return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.ParseError);
+                        }
+                    }
                 }
                 
                 return new ResolutionDetails<Value>(flagKey, new Value(evaluation.value), ErrorType.None, evaluation.reason, null, null, metadata);
