@@ -2,6 +2,7 @@ using OpenFeature.Model;
 using Metadata = OpenFeature.Model.Metadata;
 using OpenFeature.Constant;
 using OpenFeature;
+using System.Text.Json;
 
 namespace Hyphen.OpenFeature.Provider
 {
@@ -29,11 +30,13 @@ namespace Hyphen.OpenFeature.Provider
             {
                 if (context == null)
                     return new ResolutionDetails<bool>(flagKey, defaultValue, ErrorType.InvalidContext);
-                Evaluation evaluation = await GetEvaluation(flagKey, context);
+                Evaluation evaluation = await GetEvaluation<bool>(flagKey, context);
                 if (evaluation.type != "boolean")
                     return new ResolutionDetails<bool>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
-                return new ResolutionDetails<bool>(flagKey, Convert.ToBoolean(evaluation.value), ErrorType.None, evaluation.reason);
+                ImmutableMetadata metadata = GetMetadata(evaluation.type);
+
+                return new ResolutionDetails<bool>(flagKey, Convert.ToBoolean(evaluation.value), ErrorType.None, evaluation.reason, null, null, metadata);
             }
             catch (Exception ex)
             {
@@ -48,11 +51,12 @@ namespace Hyphen.OpenFeature.Provider
                 if (context == null)
                     return new ResolutionDetails<string>(flagKey, defaultValue, ErrorType.InvalidContext);
 
-                Evaluation evaluation = await GetEvaluation(flagKey, context);
+                Evaluation evaluation = await GetEvaluation<string>(flagKey, context);
                 if (evaluation.type != "string" || evaluation.value == null)
                     return new ResolutionDetails<string>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
-                return new ResolutionDetails<string>(flagKey, evaluation.value.ToString() ?? defaultValue, ErrorType.None, evaluation.reason);
+                ImmutableMetadata metadata = GetMetadata(evaluation.type);
+                return new ResolutionDetails<string>(flagKey, evaluation.value.ToString() ?? defaultValue, ErrorType.None, evaluation.reason, null, null, metadata);
             }
             catch (Exception ex)
             {
@@ -66,11 +70,11 @@ namespace Hyphen.OpenFeature.Provider
             {
                 if (context == null)
                     return new ResolutionDetails<int>(flagKey, defaultValue, ErrorType.InvalidContext);
-                Evaluation evaluation = await GetEvaluation(flagKey, context);
+                Evaluation evaluation = await GetEvaluation<int>(flagKey, context);
                 if (evaluation.type != "number")
                     return new ResolutionDetails<int>(flagKey, defaultValue, ErrorType.TypeMismatch);
-
-                return new ResolutionDetails<int>(flagKey, Convert.ToInt32(evaluation.value), ErrorType.None, evaluation.reason);
+                ImmutableMetadata metadata = GetMetadata(evaluation.type);
+                return new ResolutionDetails<int>(flagKey, Convert.ToInt32(evaluation.value), ErrorType.None, evaluation.reason, null, null, metadata);
             }
             catch (Exception ex)
             {
@@ -83,11 +87,12 @@ namespace Hyphen.OpenFeature.Provider
             {
                 if (context == null)
                     return new ResolutionDetails<double>(flagKey, defaultValue, ErrorType.InvalidContext);
-                Evaluation evaluation = await GetEvaluation(flagKey, context);
+                Evaluation evaluation = await GetEvaluation<double>(flagKey, context);
                 if (evaluation.type != "number")
                     return new ResolutionDetails<double>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
-                return new ResolutionDetails<double>(flagKey, Convert.ToDouble(evaluation.value), ErrorType.None, evaluation.reason);
+                ImmutableMetadata metadata = GetMetadata(evaluation.type);
+                return new ResolutionDetails<double>(flagKey, Convert.ToDouble(evaluation.value), ErrorType.None, evaluation.reason, null, null, metadata);
             }
             catch (Exception ex)
             {
@@ -101,29 +106,49 @@ namespace Hyphen.OpenFeature.Provider
             {
                 if (context == null)
                     return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.InvalidContext);
-                Evaluation evaluation = await GetEvaluation(flagKey, context);
-
+                Evaluation evaluation = await GetEvaluation<Value>(flagKey, context);
+                
                 if (evaluation.type != "object")
                     return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
                 if (evaluation.value == null)
                     return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.ParseError);
 
-                var value = System.Text.Json.JsonSerializer.Deserialize<Value>(evaluation.value.ToString()!);
+                ImmutableMetadata metadata = GetMetadata(evaluation.type);
 
-                return new ResolutionDetails<Value>(flagKey, value!, ErrorType.None, evaluation.reason);
+                if (evaluation.value is JsonElement jsonElement)
+                {
+                    return new ResolutionDetails<Value>(flagKey, new Value(jsonElement.GetRawText()), ErrorType.None, evaluation.reason, null, null, metadata);
+                }
+                
+                return new ResolutionDetails<Value>(flagKey, new Value(evaluation.value), ErrorType.None, evaluation.reason, null, null, metadata);
             }
             catch (Exception ex)
             {
                 return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.General, ex.Message);
             }
         }
-        private async Task<Evaluation> GetEvaluation(string flagKey, EvaluationContext context)
+        private async Task<Evaluation> GetEvaluation<T>(string flagKey, EvaluationContext context)
         {
             EvaluationResponse response = await _hyphenClient.Evaluate(context);
 
-            if (!response.toggles.TryGetValue(flagKey, out var evaluation))
+            if (!response.toggles.TryGetValue(flagKey, out Evaluation? evaluation))
                 throw new KeyNotFoundException($"Flag {flagKey} not found");
+
+            
+            T value;
+            if (evaluation.value != null && evaluation.type != "object")
+            {
+                if (evaluation.value is JsonElement jsonElement)
+                {
+                    value = jsonElement.Deserialize<T>()!;
+                }
+                else
+                {
+                    value = (T)evaluation.value;
+                }
+                evaluation.value = value;
+            }
             return evaluation;
         }
         private string GetTargetingKey(EvaluationContext context)
@@ -159,6 +184,12 @@ namespace Hyphen.OpenFeature.Provider
                 .SetTargetingKey(targetingKey);
 
             return newContext.Build();
+        }
+
+        private ImmutableMetadata GetMetadata(string type)
+        {
+            Dictionary<string, object> metadata = new Dictionary<string, object> { { "type", type } };
+            return new ImmutableMetadata(metadata);
         }
     }
 }
