@@ -8,6 +8,10 @@ namespace Hyphen.OpenFeature.Provider
     {
         public override async ValueTask AfterAsync<T>(HookContext<T> context, FlagEvaluationDetails<T> details, IReadOnlyDictionary<string, object>? hints = null, CancellationToken cancellationToken = default)
         {
+            if (options.EnableToggleUsage == false)
+            {
+                return;
+            }
             HyphenClient hyphenClient = new(publicKey, options);
             HyphenEvaluationContext payloadFromContext = hyphenClient.BuildPayloadFromContext(context.EvaluationContext);
             string type = details.FlagMetadata?.GetString("type") ?? details.Value!.GetType().Name;
