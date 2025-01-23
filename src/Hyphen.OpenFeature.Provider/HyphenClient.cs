@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Net;
 using OpenFeature.Model;
 
 namespace Hyphen.OpenFeature.Provider
@@ -111,7 +112,12 @@ namespace Hyphen.OpenFeature.Provider
         {
             string? application = context.ContainsKey("Application") ?  context.GetValue("Application").AsString : options.Application;
             string? environment = context.ContainsKey("Environment") ? context.GetValue("Environment").AsString : options.Environment;
-            string? ipAddress = context.ContainsKey("IpAddress") ? context.GetValue("IpAddress").AsString : null;
+            IPAddress? ipAddress = null;
+            if (context.ContainsKey("IpAddress") && context.GetValue("IpAddress").AsString is string ip)
+            {
+                IPAddress.TryParse(ip, out var parsedIp);
+                ipAddress = parsedIp;
+            }
             Structure? userContext = context.ContainsKey("User") ? context.GetValue("User").AsStructure : null;
             Dictionary<string, object> customAttributes = new Dictionary<string, object>();
 
