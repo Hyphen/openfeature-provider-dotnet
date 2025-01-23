@@ -1,39 +1,32 @@
-using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Options;
 using OpenFeature.Model;
 
 namespace Hyphen.OpenFeature.Provider
 {
     public class HyphenClient
     {
-        private readonly string _publicKey;
-        private readonly HyphenProviderOptions _options;
-        private readonly string[] _horizonUrls;
-        private readonly string _defaultHorizonUrl;
-        private readonly CacheClient _cache;
-        private readonly HttpClient _httpClient;
+        private readonly string publicKey;
+        private readonly HyphenProviderOptions options;
+        private readonly Uri[] horizonUrls;
+        private readonly Uri defaultHorizonUrl;
+        private readonly CacheClient cache;
+        private readonly HttpClient httpClient;
 
         public HyphenClient(string publicKey, HyphenProviderOptions options)
         {
-            _publicKey = publicKey;
-            _options = options;
-            _defaultHorizonUrl = BuildDefaultHorizonUrl(publicKey);
-            var urls = options.HorizonUrls ?? Array.Empty<string>();
-            _horizonUrls = new List<string>(urls) { _defaultHorizonUrl }.ToArray();
-            var cache = options.Cache ?? new CacheOptions();
-            _cache = new CacheClient(cache);
-            _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("x-api-key", publicKey);
-        }
-
-        private string BuildDefaultHorizonUrl(string publicKey)
-        {
+            this.publicKey = publicKey;
+            this.options = options;
             var orgId = GetOrgIdFromPublicKey(publicKey);
-            return !string.IsNullOrEmpty(orgId) 
-                ? $"https://{orgId}.toggle.hyphen.cloud" 
-                : "https://toggle.hyphen.cloud";
+            defaultHorizonUrl = new Uri(!string.IsNullOrEmpty(orgId)
+                ? $"https://{orgId}.toggle.hyphen.cloud"
+                : "https://toggle.hyphen.cloud");
+            var urlStrings = options.HorizonUrls ?? [];
+            horizonUrls = [.. urlStrings.Select(u => new Uri(u)), defaultHorizonUrl];
+            var cacheOptions = options.Cache ?? new CacheOptions();
+            cache = new CacheClient(cacheOptions);
+            httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("x-api-key", publicKey);
         }
 
         static string? GetOrgIdFromPublicKey(string publicKey)
@@ -54,7 +47,7 @@ namespace Hyphen.OpenFeature.Provider
 
         public async Task<EvaluationResponse> Evaluate(EvaluationContext context)
         {
-            var cachedResponse = _cache.Get<EvaluationResponse>(context);
+            var cachedResponse = cache.Get<EvaluationResponse>(context);
             if (cachedResponse != null)
             {
                 return cachedResponse;
@@ -65,7 +58,7 @@ namespace Hyphen.OpenFeature.Provider
 
             if (evaluationResponse != null)
             {
-                _cache.Set(context, evaluationResponse);
+                cache.Set(context, evaluationResponse);
             }
             return evaluationResponse!;
         }
@@ -78,12 +71,12 @@ namespace Hyphen.OpenFeature.Provider
         private async Task<string> TryUrls(string urlPath, object payload)
         {
             Exception lastException = new Exception("Failed to connect to any horizon URL");
-            foreach (var baseUrl in _horizonUrls)
+            foreach (var baseUrl in horizonUrls)
             {
                 try
                 {
-                    string? url = new Uri(new Uri(baseUrl), urlPath.TrimStart('/')).ToString();
-                    string? response = await HttpPost(url, payload);
+                    var url = new Uri(baseUrl, urlPath.TrimStart('/'));
+                    string? response = await HttpPost(url.ToString(), payload);
                     return response;
                 }
                 catch (Exception ex)
@@ -103,7 +96,7 @@ namespace Hyphen.OpenFeature.Provider
                 "application/json"
             );
 
-            var response = await _httpClient.PostAsync(url, content);
+            var response = await httpClient.PostAsync(url, content);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -116,8 +109,8 @@ namespace Hyphen.OpenFeature.Provider
 
         public HyphenEvaluationContext BuildPayloadFromContext(EvaluationContext context)
         {
-            string? application = context.ContainsKey("Application") ?  context.GetValue("Application").AsString : _options.Application;
-            string? environment = context.ContainsKey("Environment") ? context.GetValue("Environment").AsString : _options.Environment;
+            string? application = context.ContainsKey("Application") ?  context.GetValue("Application").AsString : options.Application;
+            string? environment = context.ContainsKey("Environment") ? context.GetValue("Environment").AsString : options.Environment;
             string? ipAddress = context.ContainsKey("IpAddress") ? context.GetValue("IpAddress").AsString : null;
             Structure? userContext = context.ContainsKey("User") ? context.GetValue("User").AsStructure : null;
             Dictionary<string, object> customAttributes = new Dictionary<string, object>();
