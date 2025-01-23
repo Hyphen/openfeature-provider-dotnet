@@ -1,4 +1,4 @@
-using OpenFeature.Model;
+using System.Net;
 
 namespace Hyphen.OpenFeature.Provider
 {
@@ -7,7 +7,7 @@ namespace Hyphen.OpenFeature.Provider
         public required string targetingKey { get; set; }
         public required string application { get; set; }
         public required string environment { get; set; }
-        public string? ipAddress { get; set; }
+        public IPAddress? ipAddress { get; set; }
         public Dictionary<string, object>? customAttributes { get; set; }
         public UserContext? user { get; set; }
     }
