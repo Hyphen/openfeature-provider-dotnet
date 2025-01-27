@@ -56,7 +56,7 @@ namespace Hyphen.OpenFeature.Provider
             var key = _generateCacheKeyFn(context);
             var options = new MemoryCacheEntryOptions()
                 .SetAbsoluteExpiration(TimeSpan.FromSeconds(_ttlSeconds));
-            
+
             _cache.Set(key, value, options);
         }
     }

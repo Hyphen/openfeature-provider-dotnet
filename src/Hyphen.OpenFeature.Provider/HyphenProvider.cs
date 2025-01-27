@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace Hyphen.OpenFeature.Provider
 {
-    public class HyphenProvider(string publicKey, HyphenProviderOptions options): FeatureProvider
+    public class HyphenProvider(string publicKey, HyphenProviderOptions options) : FeatureProvider
     {
         private const string Name = "hyphen-toggle-dotnet";
         private readonly HyphenClient _hyphenClient = new(publicKey, options);
@@ -107,7 +107,7 @@ namespace Hyphen.OpenFeature.Provider
                 if (context == null)
                     return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.InvalidContext);
                 Evaluation evaluation = await GetEvaluation<Value>(flagKey, context);
-                
+
                 if (evaluation.type != "object")
                     return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.TypeMismatch);
 
@@ -145,7 +145,7 @@ namespace Hyphen.OpenFeature.Provider
                         }
                     }
                 }
-                
+
                 return new ResolutionDetails<Value>(flagKey, new Value(evaluation.value), ErrorType.None, evaluation.reason, null, null, metadata);
             }
             catch (Exception ex)
@@ -160,7 +160,7 @@ namespace Hyphen.OpenFeature.Provider
             if (!response.toggles.TryGetValue(flagKey, out Evaluation? evaluation))
                 throw new KeyNotFoundException($"Flag {flagKey} not found");
 
-            
+
             T value;
             if (evaluation.value != null && evaluation.type != "object")
             {

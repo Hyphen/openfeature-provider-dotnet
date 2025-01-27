@@ -1,6 +1,5 @@
 ﻿using OpenFeature.Model;
 using OpenFeature;
-using System.Text.Json;
 
 namespace Hyphen.OpenFeature.Provider
 {

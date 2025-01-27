@@ -1,13 +1,11 @@
 using System.Text;
 using System.Text.Json;
-using System.Net;
 using OpenFeature.Model;
 
 namespace Hyphen.OpenFeature.Provider
 {
     public class HyphenClient
     {
-        private readonly string publicKey;
         private readonly HyphenProviderOptions options;
         private readonly Uri[] horizonUrls;
         private readonly Uri defaultHorizonUrl;
@@ -16,7 +14,6 @@ namespace Hyphen.OpenFeature.Provider
 
         public HyphenClient(string publicKey, HyphenProviderOptions options)
         {
-            this.publicKey = publicKey;
             this.options = options;
             var orgId = GetOrgIdFromPublicKey(publicKey);
             defaultHorizonUrl = new Uri(!string.IsNullOrEmpty(orgId)
@@ -110,14 +107,9 @@ namespace Hyphen.OpenFeature.Provider
 
         public HyphenEvaluationContext BuildPayloadFromContext(EvaluationContext context)
         {
-            string? application = context.ContainsKey("Application") ?  context.GetValue("Application").AsString : options.Application;
+            string? application = context.ContainsKey("Application") ? context.GetValue("Application").AsString : options.Application;
             string? environment = context.ContainsKey("Environment") ? context.GetValue("Environment").AsString : options.Environment;
-            IPAddress? ipAddress = null;
-            if (context.ContainsKey("IpAddress") && context.GetValue("IpAddress").AsString is string ip)
-            {
-                IPAddress.TryParse(ip, out var parsedIp);
-                ipAddress = parsedIp;
-            }
+            string? ipAddress = context.ContainsKey("IpAddress") ? context.GetValue("IpAddress").AsString : null;
             Structure? userContext = context.ContainsKey("User") ? context.GetValue("User").AsStructure : null;
             Dictionary<string, object> customAttributes = new Dictionary<string, object>();
 
@@ -153,7 +145,7 @@ namespace Hyphen.OpenFeature.Provider
                     }
                 }
             }
-            
+
             if (user != null)
                 user.customAttributes = userCustomAttributes;
 
@@ -166,7 +158,7 @@ namespace Hyphen.OpenFeature.Provider
                 environment = environment!,
                 customAttributes = customAttributes,
             };
-            
+
             return payload;
         }
     }
