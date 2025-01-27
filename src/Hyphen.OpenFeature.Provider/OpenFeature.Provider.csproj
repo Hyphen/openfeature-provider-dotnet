@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Hyphen.OpenFeature.Provider</RootNamespace>
+        <PackageId>Hyphen.OpenFeature.Provider</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Hyphen</Authors>
+        <Company>Hyphen</Company>
+        <Description>Hyphen provider implementation for OpenFeature .NET SDK</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.1" />
+        <PackageReference Include="OpenFeature" Version="2.2.0" />
+        <PackageReference Include="System.Text.Json" Version="9.0.1" />
+    </ItemGroup>
+
+</Project>
