@@ -1,6 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hyphen.OpenFeature.Provider", "src\Hyphen.OpenFeature.Provider\OpenFeature.Provider.csproj", "{F8874DC7-8079-46C3-8DE9-08B1718CE6F2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hyphen.OpenFeature.Provider.Tests", "src\Hyphen.OpenFeature.Provider.Tests\Hyphen.OpenFeature.Provider.Tests.csproj", "{B8874DC7-8079-46C3-8DE9-08B1718CE6F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -11,9 +13,9 @@ Global
 		{F8874DC7-8079-46C3-8DE9-08B1718CE6F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8874DC7-8079-46C3-8DE9-08B1718CE6F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8874DC7-8079-46C3-8DE9-08B1718CE6F2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A8874DC7-8079-46C3-8DE9-08B1718CE6F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A8874DC7-8079-46C3-8DE9-08B1718CE6F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A8874DC7-8079-46C3-8DE9-08B1718CE6F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A8874DC7-8079-46C3-8DE9-08B1718CE6F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8874DC7-8079-46C3-8DE9-08B1718CE6F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8874DC7-8079-46C3-8DE9-08B1718CE6F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8874DC7-8079-46C3-8DE9-08B1718CE6F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8874DC7-8079-46C3-8DE9-08B1718CE6F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
