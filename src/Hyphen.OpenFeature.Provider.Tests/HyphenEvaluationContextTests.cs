@@ -24,7 +24,7 @@ public class HyphenEvaluationContextTests
     [Theory]
     [InlineData("test-user", "test-app", "test-env", "127.0.0.1", "us-east", "user-123", "test@example.com", "Test User", "admin")]
     public void HyphenEvaluationContext_WithAllProperties_CreatesInstance(
-        string targetingKey, string application, string environment, 
+        string targetingKey, string application, string environment,
         string ipAddressStr, string region,
         string userId, string userEmail, string userName, string userRole)
     {
