@@ -38,11 +38,20 @@ using OpenFeature;
 using Hyphen.OpenFeature.Provider;
 
 var publicKey = "your-public-key-here";
+
+// Example with alternateId environment format
 var options = new HyphenProviderOptions
 {
     Application = "your-application-name",
-    Environment = "production"
+    Environment = "production"  // Using alternateId format
 };
+
+// OR using project environment ID format
+// var options = new HyphenProviderOptions
+// {
+//     Application = "your-application-name",
+//     Environment = "pevr_abc123"  // Using project environment ID format
+// };
 
 await OpenFeature.SetProviderAndWait(new HyphenProvider(publicKey, options));
 var client = OpenFeature.GetClient();
@@ -85,10 +94,25 @@ var flagValue = await client.GetBooleanValue("feature-flag-key", false, context)
 | Option              | Type      | Description                                     |
 |--------------------|-----------|-------------------------------------------------|
 | `Application`      | string    | The application id or alternate id              |
-| `Environment`      | string    | The environment (e.g., `production`, `staging`) |
+| `Environment`      | string    | The environment identifier (see below for valid formats) |
 | `HorizonUrls`      | string[]  | Hyphen Horizon URLs for fetching flags         |
 | `EnableToggleUsage`| bool?     | Enable/disable toggle usage logging            |
 | `Cache`            | CacheOptions | Configuration for caching evaluations        |
+
+### Environment Format
+
+The `Environment` option must follow one of these formats:
+
+1. A project environment ID that starts with the prefix "pevr_" followed by alphanumeric characters
+   - Example: `pevr_123abc`
+
+2. A valid alternateId that meets these criteria:
+   - Contains only lowercase letters, numbers, hyphens, and underscores
+   - Has a length between 1 and 25 characters
+   - Does not contain the word "environments"
+   - Examples: `production`, `staging`, `dev-123`, `test_env`
+
+Invalid environment formats will cause the provider to throw an `ArgumentException` during initialization.
 
 ### Cache Configuration
 
