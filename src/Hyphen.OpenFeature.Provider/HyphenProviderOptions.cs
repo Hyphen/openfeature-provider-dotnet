@@ -2,9 +2,6 @@ using OpenFeature.Model;
 
 namespace Hyphen.OpenFeature.Provider
 {
-    /// <summary>
-    /// Configuration options for the Hyphen OpenFeature provider.
-    /// </summary>
     public class HyphenProviderOptions
     {
         /// <summary>
@@ -21,24 +18,21 @@ namespace Hyphen.OpenFeature.Provider
         public required string Environment { get; set; }
         
         /// <summary>
-        /// The Hyphen server URLs.
+        /// The Hyphen server URL
         /// </summary>
         public string[]? HorizonUrls { get; set; }
         
         /// <summary>
-        /// Flag to enable toggle usage tracking.
+        /// Flag to enable toggle usage
         /// </summary>
         public bool? EnableToggleUsage { get; set; } = true;
         
         /// <summary>
-        /// The cache options for the provider.
+        /// The cache options for the provider
         /// </summary>
         public CacheOptions? Cache { get; set; }
     }
 
-    /// <summary>
-    /// Configuration options for caching feature flag evaluations.
-    /// </summary>
     public class CacheOptions
     {
         /// <summary>
