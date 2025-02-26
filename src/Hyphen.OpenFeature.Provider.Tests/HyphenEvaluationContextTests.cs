@@ -1,6 +1,3 @@
-using OpenFeature.Model;
-using System.Net;
-
 namespace Hyphen.OpenFeature.Provider.Tests;
 
 public class HyphenEvaluationContextTests
@@ -27,7 +24,7 @@ public class HyphenEvaluationContextTests
     [Theory]
     [InlineData("test-user", "test-app", "test-env", "127.0.0.1", "us-east", "user-123", "test@example.com", "Test User", "admin")]
     public void HyphenEvaluationContext_WithAllProperties_CreatesInstance(
-        string targetingKey, string application, string environment, 
+        string targetingKey, string application, string environment,
         string ipAddressStr, string region,
         string userId, string userEmail, string userName, string userRole)
     {
@@ -36,7 +33,7 @@ public class HyphenEvaluationContextTests
             targetingKey = targetingKey,
             application = application,
             environment = environment,
-            ipAddress = IPAddress.Parse(ipAddressStr),
+            ipAddress = ipAddressStr,
             customAttributes = new Dictionary<string, object>
             {
                 { "region", region }
@@ -56,7 +53,7 @@ public class HyphenEvaluationContextTests
         Assert.Equal(targetingKey, context.targetingKey);
         Assert.Equal(application, context.application);
         Assert.Equal(environment, context.environment);
-        Assert.Equal(IPAddress.Parse(ipAddressStr), context.ipAddress);
+        Assert.Equal(ipAddressStr, context.ipAddress);
         Assert.NotNull(context.customAttributes);
         Assert.Single(context.customAttributes);
         Assert.Equal(region, context.customAttributes["region"]);
