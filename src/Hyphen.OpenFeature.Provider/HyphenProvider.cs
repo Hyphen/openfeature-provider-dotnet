@@ -29,23 +29,23 @@ namespace Hyphen.OpenFeature.Provider
             {
                 throw new ArgumentException("Application is required");
             }
-            
+
             if (string.IsNullOrEmpty(options.Environment))
             {
                 throw new ArgumentException("Environment is required");
             }
-            
+
             ValidateEnvironmentFormat(options.Environment);
         }
-        
+
         private static void ValidateEnvironmentFormat(string environment)
         {
             // Check if it's a project environment ID (starts with 'pevr_')
             bool isEnvironmentId = environment.StartsWith("pevr_");
-            
+
             // Check if it's a valid alternateId (1-25 chars, lowercase letters, numbers, hyphens, underscores)
             bool isValidAlternateId = Regex.IsMatch(environment, "^(?!.*\\b(environments)\\b)[a-z0-9\\-_]{1,25}$");
-            
+
             if (!isEnvironmentId && !isValidAlternateId)
             {
                 throw new ArgumentException(
@@ -62,7 +62,7 @@ namespace Hyphen.OpenFeature.Provider
             Api.Instance.SetContext(_context);
             return Task.CompletedTask;
         }
-        
+
         public override Metadata GetMetadata()
         {
             return _providerMetadata;
@@ -125,7 +125,7 @@ namespace Hyphen.OpenFeature.Provider
                 return new ResolutionDetails<int>(flagKey, defaultValue, ErrorType.General, ex.Message);
             }
         }
-        
+
         public override async Task<ResolutionDetails<double>> ResolveDoubleValueAsync(string flagKey, double defaultValue, EvaluationContext? context = null, CancellationToken cancellationToken = default)
         {
             try
@@ -198,7 +198,7 @@ namespace Hyphen.OpenFeature.Provider
                 return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.General, ex.Message);
             }
         }
-        
+
         private async Task<Evaluation> GetEvaluation<T>(string flagKey, EvaluationContext context)
         {
             EvaluationResponse response = await _hyphenClient.Evaluate(context);
@@ -222,7 +222,7 @@ namespace Hyphen.OpenFeature.Provider
             }
             return evaluation;
         }
-        
+
         private string GetTargetingKey(EvaluationContext context)
         {
             Structure? userContext = context.ContainsKey("User") ? context.GetValue("User").AsStructure : null;
@@ -237,7 +237,7 @@ namespace Hyphen.OpenFeature.Provider
 
             return $"{_options.Application}-{_options.Environment}-{Guid.NewGuid().ToString("N")[..8]}";
         }
-        
+
         private EvaluationContext BuildContext(EvaluationContext context)
         {
             EvaluationContext _context = context;

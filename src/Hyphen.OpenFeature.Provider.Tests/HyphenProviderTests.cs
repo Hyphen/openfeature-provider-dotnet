@@ -25,7 +25,7 @@ public class HyphenProviderTests
         var metadata = provider.GetMetadata();
         Assert.Equal("hyphen-toggle-dotnet", metadata.Name);
     }
-    
+
     [Fact]
     public void Constructor_WithValidEnvironmentId_CreatesInstance()
     {
@@ -34,12 +34,12 @@ public class HyphenProviderTests
             Application = "test-app",
             Environment = "pevr_123abc"
         };
-        
+
         var provider = new HyphenProvider(_testPublicKey, options);
-        
+
         Assert.NotNull(provider);
     }
-    
+
     [Fact]
     public void Constructor_WithValidAlternateId_CreatesInstance()
     {
@@ -48,12 +48,12 @@ public class HyphenProviderTests
             Application = "test-app",
             Environment = "test-env-123"
         };
-        
+
         var provider = new HyphenProvider(_testPublicKey, options);
-        
+
         Assert.NotNull(provider);
     }
-    
+
     [Fact]
     public void Constructor_WithInvalidEnvironment_ThrowsArgumentException()
     {
@@ -62,11 +62,11 @@ public class HyphenProviderTests
             Application = "test-app",
             Environment = "INVALID_UPPERCASE"
         };
-        
+
         var exception = Assert.Throws<ArgumentException>(() => new HyphenProvider(_testPublicKey, options));
         Assert.Contains("Invalid environment format", exception.Message);
     }
-    
+
     [Fact]
     public void Constructor_WithTooLongEnvironment_ThrowsArgumentException()
     {
@@ -75,11 +75,11 @@ public class HyphenProviderTests
             Application = "test-app",
             Environment = "this-environment-name-is-way-too-long"
         };
-        
+
         var exception = Assert.Throws<ArgumentException>(() => new HyphenProvider(_testPublicKey, options));
         Assert.Contains("Invalid environment format", exception.Message);
     }
-    
+
     [Fact]
     public void Constructor_WithEnvironmentsWord_ThrowsArgumentException()
     {
@@ -88,7 +88,7 @@ public class HyphenProviderTests
             Application = "test-app",
             Environment = "test-environments-123"
         };
-        
+
         var exception = Assert.Throws<ArgumentException>(() => new HyphenProvider(_testPublicKey, options));
         Assert.Contains("Invalid environment format", exception.Message);
     }

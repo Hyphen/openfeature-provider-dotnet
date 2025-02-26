@@ -8,7 +8,7 @@ namespace Hyphen.OpenFeature.Provider
         /// The application name or ID for the current evaluation.
         /// </summary>
         public required string Application { get; set; }
-        
+
         /// <summary>
         /// The environment identifier for the Hyphen project.
         /// This can be either:
@@ -16,17 +16,17 @@ namespace Hyphen.OpenFeature.Provider
         /// - A valid alternateId (1-25 characters, lowercase letters, numbers, hyphens, and underscores)
         /// </summary>
         public required string Environment { get; set; }
-        
+
         /// <summary>
         /// The Hyphen server URL
         /// </summary>
         public string[]? HorizonUrls { get; set; }
-        
+
         /// <summary>
         /// Flag to enable toggle usage
         /// </summary>
         public bool? EnableToggleUsage { get; set; } = true;
-        
+
         /// <summary>
         /// The cache options for the provider
         /// </summary>
@@ -39,7 +39,7 @@ namespace Hyphen.OpenFeature.Provider
         /// The time-to-live (TTL) in seconds for the cache.
         /// </summary>
         public int? TtlSeconds { get; set; } = 30;
-        
+
         /// <summary>
         /// Generate a cache key function for the evaluation context.
         /// </summary>
