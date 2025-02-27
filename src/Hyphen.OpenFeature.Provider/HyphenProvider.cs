@@ -80,7 +80,17 @@ namespace Hyphen.OpenFeature.Provider
 
                 ImmutableMetadata metadata = GetMetadata(evaluation.type);
 
-                return new ResolutionDetails<bool>(flagKey, Convert.ToBoolean(evaluation.value), ErrorType.None, evaluation.reason, null, null, metadata);
+                bool value;
+                if (evaluation.value is string stringValue)
+                {
+                    value = stringValue.ToLower() == "true";
+                }
+                else
+                {
+                    value = Convert.ToBoolean(evaluation.value);
+                }
+
+                return new ResolutionDetails<bool>(flagKey, value, ErrorType.None, evaluation.reason, null, null, metadata);
             }
             catch (Exception ex)
             {
