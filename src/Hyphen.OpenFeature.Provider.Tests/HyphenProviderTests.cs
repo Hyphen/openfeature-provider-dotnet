@@ -27,6 +27,73 @@ public class HyphenProviderTests
     }
 
     [Fact]
+    public void Constructor_WithValidEnvironmentId_CreatesInstance()
+    {
+        var options = new HyphenProviderOptions
+        {
+            Application = "test-app",
+            Environment = "pevr_123abc"
+        };
+
+        var provider = new HyphenProvider(_testPublicKey, options);
+
+        Assert.NotNull(provider);
+    }
+
+    [Fact]
+    public void Constructor_WithValidAlternateId_CreatesInstance()
+    {
+        var options = new HyphenProviderOptions
+        {
+            Application = "test-app",
+            Environment = "test-env-123"
+        };
+
+        var provider = new HyphenProvider(_testPublicKey, options);
+
+        Assert.NotNull(provider);
+    }
+
+    [Fact]
+    public void Constructor_WithInvalidEnvironment_ThrowsArgumentException()
+    {
+        var options = new HyphenProviderOptions
+        {
+            Application = "test-app",
+            Environment = "INVALID_UPPERCASE"
+        };
+
+        var exception = Assert.Throws<ArgumentException>(() => new HyphenProvider(_testPublicKey, options));
+        Assert.Contains("Invalid environment format", exception.Message);
+    }
+
+    [Fact]
+    public void Constructor_WithTooLongEnvironment_ThrowsArgumentException()
+    {
+        var options = new HyphenProviderOptions
+        {
+            Application = "test-app",
+            Environment = "this-environment-name-is-way-too-long"
+        };
+
+        var exception = Assert.Throws<ArgumentException>(() => new HyphenProvider(_testPublicKey, options));
+        Assert.Contains("Invalid environment format", exception.Message);
+    }
+
+    [Fact]
+    public void Constructor_WithEnvironmentsWord_ThrowsArgumentException()
+    {
+        var options = new HyphenProviderOptions
+        {
+            Application = "test-app",
+            Environment = "test-environments-123"
+        };
+
+        var exception = Assert.Throws<ArgumentException>(() => new HyphenProvider(_testPublicKey, options));
+        Assert.Contains("Invalid environment format", exception.Message);
+    }
+
+    [Fact]
     public async Task InitializeAsync_WithValidContext_InitializesProvider()
     {
         var provider = new HyphenProvider(_testPublicKey, _defaultOptions);
