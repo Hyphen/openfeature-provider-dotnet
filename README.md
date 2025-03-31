@@ -6,18 +6,16 @@ The **Hyphen Toggle OpenFeature Provider** is an OpenFeature provider implementa
 
 ## Table of Contents
 
-1. [Getting Started](#getting-started)
-2. [Usage](#usage)
-3. [Configuration](#configuration)
-4. [Contributing](#contributing)
-5. [License](#license)
+1. [Installation](#installation)
+2. [Setup and Initialization](#setup-and-initialization)
+3. [Usage](#usage)
+4. [Configuration](#configuration)
+5. [Contributing](#contributing)
+6. [License](#license)
 
 ---
 
-## Getting Started
-
-### Installation
-
+## Installation
 Install the provider and OpenFeature using NuGet:
 
 ```bash
@@ -26,7 +24,6 @@ dotnet add package OpenFeature
 ```
 
 ## Setup and Initialization
-
 To integrate the Hyphen Toggle provider into your application, follow these steps:
 
 1. Configure the provider with your `publicKey` and provider options.
@@ -56,8 +53,7 @@ await OpenFeature.SetProviderAndWait(new HyphenProvider(publicKey, options));
 ```
 
 ### Usage
-
-### Contextual Feature Evaluation
+### Evaluation Context Example
 
 To evaluate a feature flag with specific user or application context, define and pass an `EvaluationContext`:
 
@@ -88,7 +84,6 @@ var flagValue = await client.GetBooleanValue("feature-flag-key", false, context)
 ```
 
 ## Configuration
-
 ### Options
 
 | Option              | Type      | Description                                     |
@@ -124,7 +119,6 @@ var options = new HyphenProviderOptions
 ```
 
 ### Context
-
 Provide an `EvaluationContext` to pass contextual data for feature evaluation.
 
 | Field               | Type                           | Description                    |
@@ -140,9 +134,7 @@ Provide an `EvaluationContext` to pass contextual data for feature evaluation.
 
 
 ## Contributing
-
 We welcome contributions to this project! If you'd like to contribute, please follow the guidelines outlined in [CONTRIBUTING.md](CONTRIBUTING.md). Whether it's reporting issues, suggesting new features, or submitting pull requests, your help is greatly appreciated!
 
 ## License
-
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for full details.
