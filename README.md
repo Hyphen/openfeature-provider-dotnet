@@ -18,20 +18,19 @@ The **Hyphen Toggle OpenFeature Provider** is an OpenFeature provider implementa
 
 ### Installation
 
-Install the provider using NuGet:
+Install the provider and OpenFeature using NuGet:
 
 ```bash
 dotnet add package Hyphen.OpenFeature.Provider
+dotnet add package OpenFeature
 ```
 
-## Usage
-
-### Example: Basic Setup
+## Setup and Initialization
 
 To integrate the Hyphen Toggle provider into your application, follow these steps:
 
-1. **Set up the provider**: Register the `HyphenProvider` with OpenFeature using your `publicKey` and provider options.
-2. **Evaluate a feature toggle**: Use the client to evaluate a feature flag.
+1. Configure the provider with your `publicKey` and provider options.
+2. Register the provider with OpenFeature.
 
 ```csharp
 using OpenFeature;
@@ -54,11 +53,11 @@ var options = new HyphenProviderOptions
 // };
 
 await OpenFeature.SetProviderAndWait(new HyphenProvider(publicKey, options));
-var client = OpenFeature.GetClient();
-var flagValue = await client.GetBooleanValue("feature-flag-key", false);
 ```
 
-### Example: Contextual Evaluation
+### Usage
+
+### Contextual Feature Evaluation
 
 To evaluate a feature flag with specific user or application context, define and pass an `EvaluationContext`:
 
@@ -84,6 +83,7 @@ var context = new HyphenEvaluationContext
     }
 };
 
+var client = OpenFeature.GetClient();
 var flagValue = await client.GetBooleanValue("feature-flag-key", false, context);
 ```
 
@@ -127,14 +127,17 @@ var options = new HyphenProviderOptions
 
 Provide an `EvaluationContext` to pass contextual data for feature evaluation.
 
-### Context Fields
-
 | Field               | Type                           | Description                    |
 |-------------------|--------------------------------|--------------------------------|
 | `TargetingKey`    | string                         | Caching evaluation key        |
 | `IpAddress`       | string                         | User's IP address             |
-| `CustomAttributes`| Dictionary<string, object>     | Additional context info       |
-| `User`           | UserContext                    | User-specific information     |
+| `CustomAttributes`| Dictionary<string, object>     | Additional context information |
+| `User`            | UserContext                    | User-specific information     |
+| `User.Id`         | string                         | Unique identifier of the user |
+| `User.Email`      | string                         | Email address of the user |
+| `User.Name`       | string                         | Name of the user |
+| `User.CustomAttributes` | Dictionary<string, object>  | Custom attributes specific to the user |
+
 
 ## Contributing
 
