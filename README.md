@@ -86,13 +86,13 @@ var flagValue = await client.GetBooleanValue("feature-flag-key", false, context)
 ## Configuration
 ### Options
 
-| Option              | Type      | Description                                     |
-|--------------------|-----------|-------------------------------------------------|
-| `Application`      | string    | The application id or alternate id              |
-| `Environment`      | string    | The environment identifier for the Hyphen project (project environment ID or alternateId). |
-| `HorizonUrls`      | string[]  | Hyphen Horizon URLs for fetching flags         |
-| `EnableToggleUsage`| bool?     | Enable/disable toggle usage logging            |
-| `Cache`            | CacheOptions | Configuration for caching evaluations        |
+| Option              | Type      | Required | Description                                     |
+|--------------------|-----------|----------|-------------------------------------------------|
+| `Application`      | string    | Yes      | The application id or alternate id              |
+| `Environment`      | string    | Yes      | The environment identifier for the Hyphen project (project environment ID or alternateId). |
+| `HorizonUrls`      | string[]  | No       | Hyphen Horizon URLs for fetching flags         |
+| `EnableToggleUsage`| bool?     | No       | Enable/disable telemetry (default: True).      |
+| `Cache`            | CacheOptions | No       | Configuration for caching evaluations        |
 
 ### Cache Configuration
 
@@ -100,8 +100,8 @@ The `cache` option accepts the following properties:
 
 | Property              | Type       | Default | Description                                                    |
 |----------------------|------------|---------|----------------------------------------------------------------|
-| `ttlSeconds`         | number     | 300     | Time-to-live in seconds for cached flag evaluations.           |
-| `generateCacheKeyFn` | Function   | -       | Custom function to generate cache keys from evaluation context. |
+| `TtlSeconds`         | number     | 300     | Time-to-live in seconds for cached flag evaluations.           |
+| `GenerateCacheKeyFn` | Function   | -       | Custom function to generate cache keys from evaluation context. |
 
 Example with cache configuration:
 
@@ -121,16 +121,16 @@ var options = new HyphenProviderOptions
 ### Context
 Provide an `EvaluationContext` to pass contextual data for feature evaluation.
 
-| Field               | Type                           | Description                    |
-|-------------------|--------------------------------|--------------------------------|
-| `TargetingKey`    | string                         | Caching evaluation key        |
-| `IpAddress`       | string                         | User's IP address             |
-| `CustomAttributes`| Dictionary<string, object>     | Additional context information |
-| `User`            | UserContext                    | User-specific information     |
-| `User.Id`         | string                         | Unique identifier of the user |
-| `User.Email`      | string                         | Email address of the user |
-| `User.Name`       | string                         | Name of the user |
-| `User.CustomAttributes` | Dictionary<string, object>  | Custom attributes specific to the user |
+| Field               | Type                           | Required | Description                    |
+|-------------------|--------------------------------|----------|--------------------------------|
+| `TargetingKey`    | string                         | Yes      | Caching evaluation key        |
+| `IpAddress`       | string                         | No       | User's IP address             |
+| `CustomAttributes`| Dictionary<string, object>     | No       | Additional context information |
+| `User`            | UserContext                    | No       | User-specific information     |
+| `User.Id`         | string                         | No       | Unique identifier of the user |
+| `User.Email`      | string                         | No       | Email address of the user |
+| `User.Name`       | string                         | No       | Name of the user |
+| `User.CustomAttributes` | Dictionary<string, object>  | No       | Custom attributes specific to the user |
 
 
 ## Contributing
