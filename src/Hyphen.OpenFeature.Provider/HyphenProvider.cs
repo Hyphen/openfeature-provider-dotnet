@@ -146,7 +146,6 @@ namespace Hyphen.OpenFeature.Provider
                 Evaluation evaluation = await GetEvaluation<double>(flagKey, context);
                 if (evaluation.type != "number")
                     return new ResolutionDetails<double>(flagKey, defaultValue, ErrorType.TypeMismatch);
-
                 ImmutableMetadata metadata = GetMetadata(evaluation.type);
                 return new ResolutionDetails<double>(flagKey, Convert.ToDouble(evaluation.value), ErrorType.None, evaluation.reason, null, null, metadata);
             }
@@ -217,7 +216,6 @@ namespace Hyphen.OpenFeature.Provider
             if (!response.toggles.TryGetValue(flagKey, out Evaluation? evaluation))
                 throw new KeyNotFoundException($"Flag {flagKey} not found");
 
-
             T value;
             if (evaluation.value != null && evaluation.type != "object")
             {
@@ -227,7 +225,7 @@ namespace Hyphen.OpenFeature.Provider
                 }
                 else
                 {
-                    value = (T)evaluation.value;
+                    value = (T)Convert.ChangeType(evaluation.value, typeof(T));
                 }
                 evaluation.value = value;
             }
