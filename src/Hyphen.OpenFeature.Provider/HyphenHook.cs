@@ -1,5 +1,7 @@
 ﻿using OpenFeature.Model;
 using OpenFeature;
+using System.Text.Json;
+using Hyphen.OpenFeature.Provider.Utils;
 
 namespace Hyphen.OpenFeature.Provider
 {
@@ -18,7 +20,7 @@ namespace Hyphen.OpenFeature.Provider
             Evaluation evaluationDetails = new Evaluation
             {
                 key = details.FlagKey,
-                value = details.Value!,
+                value = details.Value! is Value val ? ValueUtils.ConvertToNative(val) : details.Value,
                 type = type,
                 reason = details.Reason,
             };

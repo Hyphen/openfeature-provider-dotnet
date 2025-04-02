@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using OpenFeature.Model;
+using Hyphen.OpenFeature.Provider.Utils;
 
 namespace Hyphen.OpenFeature.Provider
 {
@@ -120,7 +121,7 @@ namespace Hyphen.OpenFeature.Provider
                 {
                     if (customAttributesStructure.TryGetValue(key, out var value))
                     {
-                        customAttributes[key] = value!.AsObject!;
+                        customAttributes[key] = ValueUtils.ConvertToNative(value);
                     }
                 }
             }
@@ -141,7 +142,7 @@ namespace Hyphen.OpenFeature.Provider
                 {
                     if (userCustomAttributesStructure.TryGetValue(key, out var value))
                     {
-                        userCustomAttributes[key] = value!.AsObject!;
+                        userCustomAttributes[key] = ValueUtils.ConvertToNative(value);
                     }
                 }
             }

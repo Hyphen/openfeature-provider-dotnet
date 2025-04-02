@@ -4,6 +4,7 @@ using OpenFeature.Constant;
 using OpenFeature;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Hyphen.OpenFeature.Provider.Utils;
 
 namespace Hyphen.OpenFeature.Provider
 {
@@ -184,7 +185,7 @@ namespace Hyphen.OpenFeature.Provider
                                 var structure = Structure.Builder();
                                 foreach (var property in parsedJson.EnumerateObject())
                                 {
-                                    structure.Set(property.Name, property.Value.GetRawText());
+                                    structure.Set(property.Name, ValueUtils.ConvertJsonElementToValue(property.Value));
                                 }
 
                                 return new ResolutionDetails<Value>(flagKey, new Value(structure.Build()), ErrorType.None, evaluation.reason, null, null, metadata);
@@ -194,9 +195,9 @@ namespace Hyphen.OpenFeature.Provider
                                 return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.TypeMismatch);
                             }
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.ParseError);
+                            return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.ParseError, null, null, ex.Message);
                         }
                     }
                 }
