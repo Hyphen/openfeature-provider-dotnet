@@ -60,7 +60,11 @@ namespace Hyphen.OpenFeature.Provider
         public static object? ConvertValueToObject(Value value)
         {
             if (value.IsBoolean) return value.AsBoolean!;
-            if (value.IsNumber) return (value.AsDouble ?? value.AsInteger)!;
+            if (value.IsNumber)
+            {
+                if (value.AsInteger.HasValue) return value.AsInteger.Value;
+                if (value.AsDouble.HasValue) return value.AsDouble.Value;
+            }
             if (value.IsList) return value.AsList!.Select(ConvertValueToObject).ToList();
             if (value.IsStructure)
             {
