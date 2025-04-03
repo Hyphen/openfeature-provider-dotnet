@@ -4,7 +4,6 @@ using OpenFeature.Constant;
 using OpenFeature;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Hyphen.OpenFeature.Provider.Utils;
 
 namespace Hyphen.OpenFeature.Provider
 {
@@ -184,7 +183,7 @@ namespace Hyphen.OpenFeature.Provider
                                 var structure = Structure.Builder();
                                 foreach (var property in parsedJson.EnumerateObject())
                                 {
-                                    structure.Set(property.Name, ValueUtils.ConvertJsonElementToValue(property.Value));
+                                    structure.Set(property.Name, HyphenUtils.ConvertJsonElementToValue(property.Value));
                                 }
 
                                 return new ResolutionDetails<Value>(flagKey, new Value(structure.Build()), ErrorType.None, evaluation.reason, null, null, metadata);

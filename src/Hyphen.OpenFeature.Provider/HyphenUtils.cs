@@ -4,16 +4,22 @@ using System.Text.Json;
 using System.Collections.Generic;
 using OpenFeature.Model;
 
-namespace Hyphen.OpenFeature.Provider.Utils
+namespace Hyphen.OpenFeature.Provider
 {
-    public static class ValueUtils
+    public class HyphenUtils
     {
+        /// <summary>
+        /// Converts a JsonElement to a Value object.
+        /// </summary>
+        /// <param name="element">The JsonElement to convert.</param>
+        /// <returns>A Value object representing the JsonElement.</returns>
+        /// <exception cref="ArgumentException">Thrown when the JsonElement has an unsupported value kind.</exception>
         public static Value ConvertJsonElementToValue(JsonElement element)
         {
             switch (element.ValueKind)
             {
                 case JsonValueKind.String:
-                    return new Value(element.GetString());
+                    return new Value(element.GetString()!);
 
                 case JsonValueKind.Number:
                     if (element.TryGetInt64(out long longValue))
@@ -39,30 +45,35 @@ namespace Hyphen.OpenFeature.Provider.Utils
                     return new Value(structure.Build());
 
                 case JsonValueKind.Null:
-                    return new Value((string?)null);
+                    return new Value();
 
                 default:
                     throw new ArgumentException($"Unsupported JSON value kind: {element.ValueKind}");
             }
         }
 
-        public static object ConvertToNative(Value value)
+        /// <summary>
+        /// Converts a Value object to its native object representation.
+        /// </summary>
+        /// <param name="value">The Value object to convert.</param>
+        /// <returns>An object representing the native value of the Value object.</returns>
+        public static object? ConvertValueToObject(Value value)
         {
-            if (value.IsBoolean) return value.AsBoolean;
-            if (value.IsNumber) return value.AsDouble ?? value.AsInteger;
-            if (value.IsList) return value.AsList?.Select(ConvertToNative).ToList();
+            if (value.IsBoolean) return value.AsBoolean!;
+            if (value.IsNumber) return (value.AsDouble ?? value.AsInteger)!;
+            if (value.IsList) return value.AsList!.Select(ConvertValueToObject).ToList();
             if (value.IsStructure)
             {
-                var dict = new Dictionary<string, object>();
-                foreach (var item in value.AsStructure)
+                var dict = new Dictionary<string, object?>();
+                foreach (var item in value.AsStructure!)
                 {
-                    dict[item.Key] = ConvertToNative(item.Value);
+                    dict[item.Key] = ConvertValueToObject(item.Value);
                 }
                 return dict;
             }
             if (value.IsNull) return null;
-            if (value.IsString) return value.AsString;
-            return value.AsObject;
+            if (value.IsString) return value.AsString!;
+            return value.AsObject!;
         }
     }
 }
