@@ -6,32 +6,28 @@ The **Hyphen Toggle OpenFeature Provider** is an OpenFeature provider implementa
 
 ## Table of Contents
 
-1. [Getting Started](#getting-started)
-2. [Usage](#usage)
-3. [Configuration](#configuration)
-4. [Contributing](#contributing)
-5. [License](#license)
+1. [Installation](#installation)
+2. [Setup and Initialization](#setup-and-initialization)
+3. [Usage](#usage)
+4. [Configuration](#configuration)
+5. [Contributing](#contributing)
+6. [License](#license)
 
 ---
 
-## Getting Started
-
-### Installation
-
-Install the provider using NuGet:
+## Installation
+Install the provider and OpenFeature using NuGet:
 
 ```bash
 dotnet add package Hyphen.OpenFeature.Provider
+dotnet add package OpenFeature
 ```
 
-## Usage
-
-### Example: Basic Setup
-
+## Setup and Initialization
 To integrate the Hyphen Toggle provider into your application, follow these steps:
 
-1. **Set up the provider**: Register the `HyphenProvider` with OpenFeature using your `publicKey` and provider options.
-2. **Evaluate a feature toggle**: Use the client to evaluate a feature flag.
+1. Configure the provider with your `publicKey` and provider options.
+2. Register the provider with OpenFeature.
 
 ```csharp
 using OpenFeature;
@@ -54,11 +50,10 @@ var options = new HyphenProviderOptions
 // };
 
 await OpenFeature.SetProviderAndWait(new HyphenProvider(publicKey, options));
-var client = OpenFeature.GetClient();
-var flagValue = await client.GetBooleanValue("feature-flag-key", false);
 ```
 
-### Example: Contextual Evaluation
+### Usage
+### Evaluation Context Example
 
 To evaluate a feature flag with specific user or application context, define and pass an `EvaluationContext`:
 
@@ -84,20 +79,20 @@ var context = new HyphenEvaluationContext
     }
 };
 
+var client = OpenFeature.GetClient();
 var flagValue = await client.GetBooleanValue("feature-flag-key", false, context);
 ```
 
 ## Configuration
-
 ### Options
 
-| Option              | Type      | Description                                     |
-|--------------------|-----------|-------------------------------------------------|
-| `Application`      | string    | The application id or alternate id              |
-| `Environment`      | string    | The environment identifier for the Hyphen project (project environment ID or alternateId). |
-| `HorizonUrls`      | string[]  | Hyphen Horizon URLs for fetching flags         |
-| `EnableToggleUsage`| bool?     | Enable/disable toggle usage logging            |
-| `Cache`            | CacheOptions | Configuration for caching evaluations        |
+| Option              | Type      | Required | Description                                     |
+|--------------------|-----------|----------|-------------------------------------------------|
+| `Application`      | string    | Yes      | The application id or alternate id              |
+| `Environment`      | string    | Yes      | The environment identifier for the Hyphen project (project environment ID or alternateId). |
+| `HorizonUrls`      | string[]  | No       | Hyphen Horizon URLs for fetching flags         |
+| `EnableToggleUsage`| bool?     | No       | Enable/disable telemetry (default: True).      |
+| `Cache`            | CacheOptions | No       | Configuration for caching evaluations        |
 
 ### Cache Configuration
 
@@ -105,8 +100,8 @@ The `cache` option accepts the following properties:
 
 | Property              | Type       | Default | Description                                                    |
 |----------------------|------------|---------|----------------------------------------------------------------|
-| `ttlSeconds`         | number     | 300     | Time-to-live in seconds for cached flag evaluations.           |
-| `generateCacheKeyFn` | Function   | -       | Custom function to generate cache keys from evaluation context. |
+| `TtlSeconds`         | number     | 300     | Time-to-live in seconds for cached flag evaluations.           |
+| `GenerateCacheKeyFn` | Function   | -       | Custom function to generate cache keys from evaluation context. |
 
 Example with cache configuration:
 
@@ -124,22 +119,22 @@ var options = new HyphenProviderOptions
 ```
 
 ### Context
-
 Provide an `EvaluationContext` to pass contextual data for feature evaluation.
 
-### Context Fields
+| Field               | Type                           | Required | Description                    |
+|-------------------|--------------------------------|----------|--------------------------------|
+| `TargetingKey`    | string                         | Yes      | Caching evaluation key        |
+| `IpAddress`       | string                         | No       | User's IP address             |
+| `CustomAttributes`| Dictionary<string, object>     | No       | Additional context information |
+| `User`            | UserContext                    | No       | User-specific information     |
+| `User.Id`         | string                         | No       | Unique identifier of the user |
+| `User.Email`      | string                         | No       | Email address of the user |
+| `User.Name`       | string                         | No       | Name of the user |
+| `User.CustomAttributes` | Dictionary<string, object>  | No       | Custom attributes specific to the user |
 
-| Field               | Type                           | Description                    |
-|-------------------|--------------------------------|--------------------------------|
-| `TargetingKey`    | string                         | Caching evaluation key        |
-| `IpAddress`       | string                         | User's IP address             |
-| `CustomAttributes`| Dictionary<string, object>     | Additional context info       |
-| `User`           | UserContext                    | User-specific information     |
 
 ## Contributing
-
 We welcome contributions to this project! If you'd like to contribute, please follow the guidelines outlined in [CONTRIBUTING.md](CONTRIBUTING.md). Whether it's reporting issues, suggesting new features, or submitting pull requests, your help is greatly appreciated!
 
 ## License
-
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for full details.
