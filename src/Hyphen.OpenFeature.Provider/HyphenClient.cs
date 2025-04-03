@@ -50,7 +50,7 @@ namespace Hyphen.OpenFeature.Provider
             {
                 return cachedResponse;
             }
-            HyphenEvaluationContext payload = BuildPayloadFromContext(context);
+            ContextPayload payload = BuildPayloadFromContext(context);
             var response = await TryUrls("/toggle/evaluate", payload);
             var evaluationResponse = JsonSerializer.Deserialize<EvaluationResponse>(response);
 
@@ -104,8 +104,7 @@ namespace Hyphen.OpenFeature.Provider
 
             return responseContent;
         }
-
-        public HyphenEvaluationContext BuildPayloadFromContext(EvaluationContext context)
+        public ContextPayload BuildPayloadFromContext(EvaluationContext context)
         {
             string? application = context.ContainsKey("Application") ? context.GetValue("Application").AsString : options.Application;
             string? environment = context.ContainsKey("Environment") ? context.GetValue("Environment").AsString : options.Environment;
@@ -125,7 +124,7 @@ namespace Hyphen.OpenFeature.Provider
                 }
             }
 
-            UserContext? user = userContext == null ? null : new UserContext
+            UserPayload? user = userContext == null ? null : new UserPayload
             {
                 id = userContext.ContainsKey("Id") ? userContext.GetValue("Id").AsString : null,
                 name = userContext.ContainsKey("Name") ? userContext.GetValue("Name").AsString : null,
@@ -149,7 +148,7 @@ namespace Hyphen.OpenFeature.Provider
             if (user != null)
                 user.customAttributes = userCustomAttributes;
 
-            HyphenEvaluationContext payload = new HyphenEvaluationContext
+            ContextPayload payload = new ContextPayload
             {
                 targetingKey = context.TargetingKey!,
                 ipAddress = ipAddress,
@@ -165,7 +164,7 @@ namespace Hyphen.OpenFeature.Provider
 
     public class TelemetryPayload
     {
-        public required HyphenEvaluationContext context { get; set; }
+        public required ContextPayload context { get; set; }
         public required TelemetryData data { get; set; }
     }
 
@@ -186,5 +185,23 @@ namespace Hyphen.OpenFeature.Provider
         public required string type { get; set; }
         public string? reason { get; set; }
         public string? errorMessage { get; set; }
+    }
+
+    public class ContextPayload
+    {
+        public required string targetingKey { get; set; }
+        public required string application { get; set; }
+        public required string environment { get; set; }
+        public string? ipAddress { get; set; }
+        public Dictionary<string, object>? customAttributes { get; set; }
+        public UserPayload? user { get; set; }
+    }
+
+    public class UserPayload
+    {
+        public string? id { get; set; }
+        public string? email { get; set; }
+        public string? name { get; set; }
+        public Dictionary<string, object>? customAttributes { get; set; }
     }
 }

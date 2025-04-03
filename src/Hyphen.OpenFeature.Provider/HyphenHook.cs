@@ -13,7 +13,7 @@ namespace Hyphen.OpenFeature.Provider
                 return;
             }
             HyphenClient hyphenClient = new(publicKey, options);
-            HyphenEvaluationContext payloadFromContext = hyphenClient.BuildPayloadFromContext(context.EvaluationContext);
+            ContextPayload payloadFromContext = hyphenClient.BuildPayloadFromContext(context.EvaluationContext);
             string type = details.FlagMetadata?.GetString("type") ?? details.Value!.GetType().Name;
 
             Evaluation evaluationDetails = new Evaluation
@@ -23,7 +23,7 @@ namespace Hyphen.OpenFeature.Provider
                 type = type,
                 reason = details.Reason,
             };
-            HyphenEvaluationContext contextData = new HyphenEvaluationContext
+            ContextPayload contextData = new ContextPayload
             {
                 targetingKey = payloadFromContext.targetingKey,
                 application = payloadFromContext.application,

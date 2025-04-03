@@ -79,5 +79,24 @@ namespace Hyphen.OpenFeature.Provider
             if (value.IsString) return value.AsString!;
             return value.AsObject!;
         }
+
+        /// <summary>
+        /// Converts an object to a Value object.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <returns>A Value object representing the object.</returns>
+        /// <exception cref="ArgumentException">Thrown when the object cannot be converted to a Value.</exception>
+        public static Value ConvertObjectToValue(object obj)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(obj);
+                var jsonElement = JsonSerializer.Deserialize<JsonElement>(json);
+                return ConvertJsonElementToValue(jsonElement);
+            } catch (Exception ex)
+            {
+                throw new ArgumentException($"Failed to convert object to Value: {ex.Message}", ex);
+            }
+        }
     }
 }

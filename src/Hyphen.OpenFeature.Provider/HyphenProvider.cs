@@ -233,15 +233,8 @@ namespace Hyphen.OpenFeature.Provider
 
         private string GetTargetingKey(EvaluationContext context)
         {
-            Structure? userContext = context.ContainsKey("User") ? context.GetValue("User").AsStructure : null;
-            var user = userContext == null ? null : new
-            {
-                Id = userContext.ContainsKey("Id") ? userContext.GetValue("Id").AsString : null,
-            };
             if (!string.IsNullOrEmpty(context.TargetingKey))
                 return context.TargetingKey;
-            if (user != null && !string.IsNullOrEmpty(user.Id))
-                return user.Id;
 
             return $"{_options.Application}-{_options.Environment}-{Guid.NewGuid().ToString("N")[..8]}";
         }
