@@ -93,7 +93,8 @@ namespace Hyphen.OpenFeature.Provider
                 var json = JsonSerializer.Serialize(obj);
                 var jsonElement = JsonSerializer.Deserialize<JsonElement>(json);
                 return ConvertJsonElementToValue(jsonElement);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new ArgumentException($"Failed to convert object to Value: {ex.Message}", ex);
             }
