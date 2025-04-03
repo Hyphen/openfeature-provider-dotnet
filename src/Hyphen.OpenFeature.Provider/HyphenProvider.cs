@@ -145,7 +145,6 @@ namespace Hyphen.OpenFeature.Provider
                 Evaluation evaluation = await GetEvaluation<double>(flagKey, context);
                 if (evaluation.type != "number")
                     return new ResolutionDetails<double>(flagKey, defaultValue, ErrorType.TypeMismatch);
-
                 ImmutableMetadata metadata = GetMetadata(evaluation.type);
                 return new ResolutionDetails<double>(flagKey, Convert.ToDouble(evaluation.value), ErrorType.None, evaluation.reason, null, null, metadata);
             }
@@ -184,7 +183,7 @@ namespace Hyphen.OpenFeature.Provider
                                 var structure = Structure.Builder();
                                 foreach (var property in parsedJson.EnumerateObject())
                                 {
-                                    structure.Set(property.Name, property.Value.GetRawText());
+                                    structure.Set(property.Name, HyphenUtils.ConvertJsonElementToValue(property.Value));
                                 }
 
                                 return new ResolutionDetails<Value>(flagKey, new Value(structure.Build()), ErrorType.None, evaluation.reason, null, null, metadata);
@@ -194,9 +193,9 @@ namespace Hyphen.OpenFeature.Provider
                                 return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.TypeMismatch);
                             }
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.ParseError);
+                            return new ResolutionDetails<Value>(flagKey, defaultValue, ErrorType.ParseError, null, null, ex.Message);
                         }
                     }
                 }
@@ -216,7 +215,6 @@ namespace Hyphen.OpenFeature.Provider
             if (!response.toggles.TryGetValue(flagKey, out Evaluation? evaluation))
                 throw new KeyNotFoundException($"Flag {flagKey} not found");
 
-
             T value;
             if (evaluation.value != null && evaluation.type != "object")
             {
@@ -226,7 +224,7 @@ namespace Hyphen.OpenFeature.Provider
                 }
                 else
                 {
-                    value = (T)evaluation.value;
+                    value = (T)Convert.ChangeType(evaluation.value, typeof(T));
                 }
                 evaluation.value = value;
             }
@@ -235,15 +233,8 @@ namespace Hyphen.OpenFeature.Provider
 
         private string GetTargetingKey(EvaluationContext context)
         {
-            Structure? userContext = context.ContainsKey("User") ? context.GetValue("User").AsStructure : null;
-            var user = userContext == null ? null : new
-            {
-                Id = userContext.ContainsKey("Id") ? userContext.GetValue("Id").AsString : null,
-            };
             if (!string.IsNullOrEmpty(context.TargetingKey))
                 return context.TargetingKey;
-            if (user != null && !string.IsNullOrEmpty(user.Id))
-                return user.Id;
 
             return $"{_options.Application}-{_options.Environment}-{Guid.NewGuid().ToString("N")[..8]}";
         }

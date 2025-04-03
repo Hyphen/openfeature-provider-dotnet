@@ -1,141 +1,113 @@
-namespace Hyphen.OpenFeature.Provider.Tests;
+using System.Collections.Generic;
+using OpenFeature.Model;
+using Xunit;
 
-public class HyphenEvaluationContextTests
+namespace Hyphen.OpenFeature.Provider.Tests
 {
-    [Theory]
-    [InlineData("test-user", "test-app", "test-env")]
-    public void HyphenEvaluationContext_WithRequiredProperties_CreatesInstance(string targetingKey, string application, string environment)
+    public class HyphenEvaluationContextTests
     {
-        var context = new HyphenEvaluationContext
+        [Fact]
+        public void GetEvaluationContext_WithIpAddress_SetsIpAddress()
         {
-            targetingKey = targetingKey,
-            application = application,
-            environment = environment
-        };
-
-        Assert.Equal(targetingKey, context.targetingKey);
-        Assert.Equal(application, context.application);
-        Assert.Equal(environment, context.environment);
-        Assert.Null(context.ipAddress);
-        Assert.Null(context.customAttributes);
-        Assert.Null(context.user);
-    }
-
-    [Theory]
-    [InlineData("test-user", "test-app", "test-env", "127.0.0.1", "us-east", "user-123", "test@example.com", "Test User", "admin")]
-    public void HyphenEvaluationContext_WithAllProperties_CreatesInstance(
-        string targetingKey, string application, string environment,
-        string ipAddressStr, string region,
-        string userId, string userEmail, string userName, string userRole)
-    {
-        var context = new HyphenEvaluationContext
-        {
-            targetingKey = targetingKey,
-            application = application,
-            environment = environment,
-            ipAddress = ipAddressStr,
-            customAttributes = new Dictionary<string, object>
+            var context = new HyphenEvaluationContext
             {
-                { "region", region }
-            },
-            user = new UserContext
+                IpAddress = "192.168.1.1"
+            };
+
+            var evaluationContext = context.GetEvaluationContext();
+
+            Assert.Equal("192.168.1.1", evaluationContext.GetValue("IpAddress").AsString);
+        }
+
+        [Fact]
+        public void GetEvaluationContext_WithCustomAttributes_SetsCustomAttributes()
+        {
+            var customAttributes = new Dictionary<string, object>
             {
-                id = userId,
-                email = userEmail,
-                name = userName,
-                customAttributes = new Dictionary<string, object>
-                {
-                    { "role", userRole }
-                }
-            }
-        };
-
-        Assert.Equal(targetingKey, context.targetingKey);
-        Assert.Equal(application, context.application);
-        Assert.Equal(environment, context.environment);
-        Assert.Equal(ipAddressStr, context.ipAddress);
-        Assert.NotNull(context.customAttributes);
-        Assert.Single(context.customAttributes);
-        Assert.Equal(region, context.customAttributes["region"]);
-
-        Assert.NotNull(context.user);
-        Assert.Equal(userId, context.user.id);
-        Assert.Equal(userEmail, context.user.email);
-        Assert.Equal(userName, context.user.name);
-        Assert.NotNull(context.user.customAttributes);
-        Assert.Single(context.user.customAttributes);
-        Assert.Equal(userRole, context.user.customAttributes["role"]);
-    }
-
-    [Theory]
-    [InlineData("user-123", "test@example.com", "Test User", "admin", "engineering")]
-    public void UserContext_WithAllProperties_CreatesInstance(
-        string id, string email, string name, string role, string department)
-    {
-        var user = new UserContext
-        {
-            id = id,
-            email = email,
-            name = name,
-            customAttributes = new Dictionary<string, object>
+                { "Attribute1", "Value1" },
+                { "Attribute2", 123 }
+            };
+            var context = new HyphenEvaluationContext
             {
-                { "role", role },
-                { "department", department }
-            }
-        };
+                CustomAttributes = customAttributes
+            };
 
-        Assert.Equal(id, user.id);
-        Assert.Equal(email, user.email);
-        Assert.Equal(name, user.name);
-        Assert.NotNull(user.customAttributes);
-        Assert.Equal(2, user.customAttributes.Count);
-        Assert.Equal(role, user.customAttributes["role"]);
-        Assert.Equal(department, user.customAttributes["department"]);
-    }
+            var evaluationContext = context.GetEvaluationContext();
 
-    [Theory]
-    [InlineData("user-123")]
-    public void UserContext_WithNullableProperties_CreatesInstance(string id)
-    {
-        var user = new UserContext
+            var attributes = evaluationContext.GetValue("CustomAttributes").AsStructure;
+            Assert.Equal("Value1", attributes!["Attribute1"].AsString);
+            Assert.Equal(123, attributes["Attribute2"].AsInteger);
+        }
+
+        [Fact]
+        public void GetEvaluationContext_WithUser_SetsUser()
         {
-            id = id
-        };
+            var user = new UserContext
+            {
+                Id = "user123",
+                Email = "user@example.com",
+                Name = "Test User"
+            };
+            var context = new HyphenEvaluationContext
+            {
+                User = user
+            };
 
-        Assert.Equal(id, user.id);
-        Assert.Null(user.email);
-        Assert.Null(user.name);
-        Assert.Null(user.customAttributes);
-    }
+            var evaluationContext = context.GetEvaluationContext();
 
-    [Theory]
-    [InlineData("test-user", "test-app", "test-env")]
-    public void HyphenEvaluationContext_WithEmptyCustomAttributes_CreatesInstance(
-        string targetingKey, string application, string environment)
-    {
-        var context = new HyphenEvaluationContext
+            var userValue = evaluationContext.GetValue("User").AsStructure;
+            Assert.Equal("user123", userValue!["Id"].AsString);
+            Assert.Equal("user@example.com", userValue["Email"].AsString);
+            Assert.Equal("Test User", userValue["Name"].AsString);
+            Assert.Equal("user123", evaluationContext.TargetingKey);
+        }
+
+        [Fact]
+        public void GetEvaluationContext_WithTargetingKey_SetsTargetingKey()
         {
-            targetingKey = targetingKey,
-            application = application,
-            environment = environment,
-            customAttributes = new Dictionary<string, object>()
-        };
+            var context = new HyphenEvaluationContext
+            {
+                TargetingKey = "target123"
+            };
 
-        Assert.NotNull(context.customAttributes);
-        Assert.Empty(context.customAttributes);
-    }
+            var evaluationContext = context.GetEvaluationContext();
 
-    [Theory]
-    [InlineData("user-123")]
-    public void UserContext_WithEmptyCustomAttributes_CreatesInstance(string id)
-    {
-        var user = new UserContext
+            Assert.Equal("target123", evaluationContext.TargetingKey);
+        }
+
+        [Fact]
+        public void GetEvaluationContext_WithAllProperties_SetsAllProperties()
         {
-            id = id,
-            customAttributes = new Dictionary<string, object>()
-        };
+            var customAttributes = new Dictionary<string, object>
+            {
+                { "Attribute1", "Value1" },
+                { "Attribute2", 123 }
+            };
+            var user = new UserContext
+            {
+                Id = "user123",
+                Email = "user@example.com",
+                Name = "Test User"
+            };
+            var context = new HyphenEvaluationContext
+            {
+                IpAddress = "192.168.1.1",
+                CustomAttributes = customAttributes,
+                User = user,
+                TargetingKey = "target123"
+            };
 
-        Assert.NotNull(user.customAttributes);
-        Assert.Empty(user.customAttributes);
+            var evaluationContext = context.GetEvaluationContext();
+
+            Assert.Equal("192.168.1.1", evaluationContext.GetValue("IpAddress").AsString);
+            var attributes = evaluationContext.GetValue("CustomAttributes").AsStructure;
+            Assert.Equal("Value1", attributes!["Attribute1"].AsString);
+            Assert.Equal(123, attributes["Attribute2"].AsInteger);
+            var userValue = evaluationContext.GetValue("User").AsStructure;
+            Assert.Equal("user123", userValue!["Id"].AsString);
+            Assert.Equal("user@example.com", userValue["Email"].AsString);
+            Assert.Equal("Test User", userValue["Name"].AsString);
+            Assert.Equal("target123", evaluationContext.TargetingKey);
+        }
     }
 }
