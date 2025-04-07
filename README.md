@@ -49,16 +49,12 @@ var options = new HyphenProviderOptions
 //     Environment = "pevr_abc123"  // Using project environment ID format
 // };
 
-await OpenFeature.SetProviderAndWait(new HyphenProvider(publicKey, options));
+await OpenFeature.SetProviderAsync(new HyphenProvider(publicKey, options));
 ```
 
-### Usage
-### Evaluation Context Example
-
-To evaluate a feature flag with specific user or application context, define and pass an `EvaluationContext`:
-
+3. Configure the context needed for feature targeting evaluations, incorporating user or application context.
 ```csharp
-var context = new HyphenEvaluationContext
+HyphenEvaluationContext hyphenEvaluationContext = new HyphenEvaluationContext
 {
     TargetingKey = "user-123",
     IpAddress = "203.0.113.42",
@@ -79,6 +75,14 @@ var context = new HyphenEvaluationContext
     }
 };
 
+await OpenFeature.SetProviderAsync(hx);
+var context = hyphenEvaluationContext.GetEvaluationContext();
+```
+
+### Usage
+### Evaluation Context Example
+
+```csharp
 var client = OpenFeature.GetClient();
 var flagValue = await client.GetBooleanValue("feature-flag-key", false, context);
 ```
