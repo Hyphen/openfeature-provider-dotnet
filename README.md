@@ -75,7 +75,6 @@ HyphenEvaluationContext hyphenEvaluationContext = new HyphenEvaluationContext
     }
 };
 
-await OpenFeature.SetProviderAsync(hx);
 var context = hyphenEvaluationContext.GetEvaluationContext();
 ```
 
