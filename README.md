@@ -75,7 +75,7 @@ HyphenEvaluationContext hyphenEvaluationContext = new HyphenEvaluationContext
     }
 };
 
-var context = hyphenEvaluationContext.GetEvaluationContext();
+EvaluationContext context = hyphenEvaluationContext.GetEvaluationContext();
 ```
 
 ### Usage

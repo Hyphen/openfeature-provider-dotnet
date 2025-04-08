@@ -5,14 +5,15 @@ using System.Text.Json;
 
 HyphenProvider hx = new("publick-key", new HyphenProviderOptions
 {
-    Application = "application-name",
+    Application = "application-id",
+    // Application = "application-alternative-id",
     Environment = "development",
     // Environment = "pevr_67ed807f195d4cfb93eacdc1",
     // EnableToggleUsage = false,
     Cache = new CacheOptions
     {
         TtlSeconds = 600,
-        GenerateCacheKeyFn = (EvaluationContext ctx) => ctx.ContainsKey("IpAddress") ? ctx.GetValue("IpAddress").AsString : "default"
+        GenerateCacheKeyFn = (EvaluationContext context) => context.ContainsKey("IpAddress") ? context.GetValue("IpAddress").AsString : "default"
     }
 });
 
@@ -58,24 +59,20 @@ HyphenEvaluationContext hyphenEvaluationContext = new HyphenEvaluationContext
     }
 };
 
-var ctx = hyphenEvaluationContext.GetEvaluationContext();
-
+EvaluationContext context = hyphenEvaluationContext.GetEvaluationContext();
 
 await Api.Instance.SetProviderAsync(hx);
 FeatureClient client = Api.Instance.GetClient();
 
-bool boolVar = await client.GetBooleanValueAsync("boolean-test", false, ctx);
+bool boolVar = await client.GetBooleanValueAsync("boolean-test", false, context);
 Console.WriteLine($"boolVar: {boolVar}");
 
-string stringVar = await client.GetStringValueAsync("string-test", "default", ctx);
+string stringVar = await client.GetStringValueAsync("string-test", "default", context);
 Console.WriteLine($"stringVar: {stringVar}");
 
-int intVar = await client.GetIntegerValueAsync("int-test", 0, ctx);
+int intVar = await client.GetIntegerValueAsync("int-test", 0, context);
 Console.WriteLine($"intVar: {intVar}");
 
-double doubleVar = await client.GetDoubleValueAsync("double-test", 0, ctx);
+double doubleVar = await client.GetDoubleValueAsync("double-test", 0, context);
 Console.WriteLine($"doubleVar: {doubleVar}");
 
-Value valueVar = await client.GetObjectValueAsync("object-test", new Value(new Structure(new Dictionary<string, Value> { { "key", new Value("default value") } })), ctx);
-Console.WriteLine($"keys: {JsonSerializer.Serialize(valueVar.AsStructure?.Keys)}");
-Thread.Sleep(1000000);
