@@ -1,5 +1,6 @@
 ﻿using OpenFeature.Model;
 using OpenFeature;
+using System.Text.Json;
 
 namespace Hyphen.OpenFeature.Provider
 {
@@ -12,17 +13,17 @@ namespace Hyphen.OpenFeature.Provider
                 return;
             }
             HyphenClient hyphenClient = new(publicKey, options);
-            HyphenEvaluationContext payloadFromContext = hyphenClient.BuildPayloadFromContext(context.EvaluationContext);
+            ContextPayload payloadFromContext = hyphenClient.BuildPayloadFromContext(context.EvaluationContext);
             string type = details.FlagMetadata?.GetString("type") ?? details.Value!.GetType().Name;
 
             Evaluation evaluationDetails = new Evaluation
             {
                 key = details.FlagKey,
-                value = details.Value!,
+                value = details.Value is Value val ? HyphenUtils.ConvertValueToObject(val)! : details.Value!,
                 type = type,
                 reason = details.Reason,
             };
-            HyphenEvaluationContext contextData = new HyphenEvaluationContext
+            ContextPayload contextData = new ContextPayload
             {
                 targetingKey = payloadFromContext.targetingKey,
                 application = payloadFromContext.application,
